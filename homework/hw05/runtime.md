@@ -1,0 +1,48 @@
+### 一
+
+1. 输出:36313032 2016
+2. 汇编代码如下 
+
+```asm
+	.file	"1.c"
+	.text
+	.def	__main;	.scl	2;	.type	32;	.endef
+	.section .rdata,"dr"
+.LC0:
+	.ascii "%x %s\12\0"
+	.text
+	.globl	main
+	.def	main;	.scl	2;	.type	32;	.endef
+	.seh_proc	main
+main:
+	pushq	%rbp
+	.seh_pushreg	%rbp
+	movq	%rsp, %rbp
+	.seh_setframe	%rbp, 0
+	subq	$48, %rsp
+	.seh_stackalloc	48
+	.seh_endprologue
+	call	__main
+	movb	$50, -16(%rbp)
+	movb	$48, -15(%rbp)
+	movb	$49, -14(%rbp)
+	movb	$54, -13(%rbp)
+	movb	$0, -12(%rbp)
+	leaq	-16(%rbp), %rax
+	movq	%rax, -8(%rbp)
+	movl	-16(%rbp), %eax
+	movq	-8(%rbp), %rdx
+	movq	%rdx, %r8
+	movl	%eax, %edx
+	leaq	.LC0(%rip), %rcx
+	call	printf
+	movl	$0, %eax
+	addq	$48, %rsp
+	popq	%rbp
+	ret
+	.seh_endproc
+	.ident	"GCC: (x86_64-win32-seh-rev0, Built by MinGW-W64 project) 8.1.0"
+	.def	printf;	.scl	2;	.type	32;	.endef
+
+```
+

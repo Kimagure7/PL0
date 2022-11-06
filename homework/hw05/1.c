@@ -14,6 +14,6 @@ int main()
     data.c[3] = '6';
     data.c[4] = '\0';
     c = (char *)&data;
-    printf("%x %s\n", data.i, c);
+    printf("%x %s\n", data.i, c); //可以发现windows是小端：高字节在内存高地址
     return 0;
 }
