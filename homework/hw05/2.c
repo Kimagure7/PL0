@@ -1,4 +1,3 @@
-#include<stdio.h>
 #define N 2
 // #define N 11
 typedef struct POINT

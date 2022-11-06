@@ -1,59 +1,37 @@
 	.file	"2.c"
 	.text
-	.section	.rodata
-.LC0:
-	.string	"%d"
-	.text
-	.globl	main
-	.type	main, @function
-main:
+	.globl	f
+	.type	f, @function
+f:
 .LFB0:
 	.cfi_startproc
 	endbr32
-	leal	4(%esp), %ecx
-	.cfi_def_cfa 1, 0
-	andl	$-16, %esp
-	pushl	-4(%ecx)
 	pushl	%ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset 5, -8
 	movl	%esp, %ebp
-	.cfi_escape 0x10,0x5,0x2,0x75,0
-	pushl	%ebx
-	pushl	%ecx
-	.cfi_escape 0xf,0x3,0x75,0x78,0x6
-	.cfi_escape 0x10,0x3,0x2,0x75,0x7c
-	subl	$32, %esp
+	.cfi_def_cfa_register 5
+	subl	$8, %esp
 	call	__x86.get_pc_thunk.ax
 	addl	$_GLOBAL_OFFSET_TABLE_, %eax
-	movl	%gs:20, %ecx
-	movl	%ecx, -12(%ebp)
-	xorl	%ecx, %ecx
-	subl	$8, %esp
-	pushl	$16
-	leal	.LC0@GOTOFF(%eax), %edx
-	pushl	%edx
-	movl	%eax, %ebx
-	call	printf@PLT
+	movl	$100, 8(%ebp)
+	movl	$16, 12(%ebp)
+	movb	$65, 17(%ebp)
+	movl	20(%ebp), %eax
+	pushl	12(%eax)
+	pushl	8(%eax)
+	pushl	4(%eax)
+	pushl	(%eax)
+	call	f
 	addl	$16, %esp
-	movl	$0, %eax
-	movl	-12(%ebp), %ecx
-	xorl	%gs:20, %ecx
-	je	.L3
-	call	__stack_chk_fail_local
-.L3:
-	leal	-8(%ebp), %esp
-	popl	%ecx
-	.cfi_restore 1
-	.cfi_def_cfa 1, 0
-	popl	%ebx
-	.cfi_restore 3
-	popl	%ebp
+	nop
+	leave
 	.cfi_restore 5
-	leal	-4(%ecx), %esp
 	.cfi_def_cfa 4, 4
 	ret
 	.cfi_endproc
 .LFE0:
-	.size	main, .-main
+	.size	f, .-f
 	.section	.text.__x86.get_pc_thunk.ax,"axG",@progbits,__x86.get_pc_thunk.ax,comdat
 	.globl	__x86.get_pc_thunk.ax
 	.hidden	__x86.get_pc_thunk.ax
@@ -65,7 +43,6 @@ __x86.get_pc_thunk.ax:
 	ret
 	.cfi_endproc
 .LFE1:
-	.hidden	__stack_chk_fail_local
 	.ident	"GCC: (Ubuntu 9.4.0-1ubuntu1~20.04.1) 9.4.0"
 	.section	.note.GNU-stack,"",@progbits
 	.section	.note.gnu.property,"a"
