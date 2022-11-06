@@ -100,3 +100,60 @@ f:
 	ret
 ```
 
+2. addl 作用是清除给函数传参的空间，先前这16个空间正好对应给函数传递的参数，函数调用时产生的局部空间会自己删除，所以只需考虑删除传参分配的空间
+
+leal的作用是移动esp到合适的位置，恢复函数调用的时候借用的edi和esi寄存器，恢复现场。
+
+3. 编译器根据结构体大小，将结构体中的元素依次pushl到栈中，然后调用函数
+
+### 三
+
+1. line元素值为1,2,3,4,5,6,7,8,9,10
+
+```asm
+	.file "p.c"
+	.text
+.globl main
+	.type main,@function
+main:
+	pushl %ebp
+	movl %esp, %ebp
+	subl $72, %esp
+	andl $-16, %esp
+	movl $0, %eax
+	subl %eax, %esp
+	leal -56(%ebp), %eax #留给数组的
+	movl %eax, -64(%ebp) #指针p
+	movl $0, -60(%ebp)	 #i
+.L2:
+	jle .L5 #继续循环
+	jmp .L3
+.L5:
+	movl -64(%ebp), %edx
+	movl -60(%ebp), %eax
+	movl %eax, (%edx)
+	subl $12, %esp
+	leal -64(%ebp), %eax
+	pushl %eax
+	call g
+	② 
+	leal -60(%ebp), %eax
+	incl (%eax)
+	③ 
+.L3:
+	movl $0, %eax
+	leave
+	ret
+.globl g
+	.type g,@function
+g:
+	pushl %ebp
+	movl %esp, %ebp
+	movl ④ , %eax
+	movl ⑤ , %eax
+	⑥ 
+	movl ⑦ , %eax
+	⑧ 
+	leave
+	ret
+```
