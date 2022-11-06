@@ -126,6 +126,7 @@ main:
 	movl %eax, -64(%ebp) #指针p
 	movl $0, -60(%ebp)	 #i
 .L2:
+	cmpl $9,-56(%ebp)
 	jle .L5 #继续循环
 	jmp .L3
 .L5:
@@ -136,10 +137,10 @@ main:
 	leal -64(%ebp), %eax
 	pushl %eax
 	call g
-	② 
+	add $16,%esp
 	leal -60(%ebp), %eax
 	incl (%eax)
-	③ 
+	jmp .L2
 .L3:
 	movl $0, %eax
 	leave
@@ -149,11 +150,13 @@ main:
 g:
 	pushl %ebp
 	movl %esp, %ebp
-	movl ④ , %eax
-	movl ⑤ , %eax
-	⑥ 
-	movl ⑦ , %eax
-	⑧ 
+	movl 8(%ebp), %eax #传参的位置
+	movl (%eax), %eax
+	addl $1,(%eax) #(**p)++
+	movl 8(%ebp), %eax
+	addl $1,(%eax)
 	leave
 	ret
 ```
+
+### 四
