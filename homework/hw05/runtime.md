@@ -100,11 +100,11 @@ f:
 	ret
 ```
 
-2. addl 作用是清除给函数传参的空间，先前这16个空间正好对应给函数传递的参数，函数调用时产生的局部空间会自己删除，所以只需考虑删除传参分配的空间
+3. addl 作用是清除给函数传参的空间，先前这16个空间正好对应给函数传递的参数，函数调用时产生的局部空间会自己删除，所以只需考虑删除传参分配的空间
 
 leal的作用是移动esp到合适的位置，恢复函数调用的时候借用的edi和esi寄存器，恢复现场。
 
-3. 编译器根据结构体大小，将结构体中的元素依次pushl到栈中，然后调用函数
+4. 编译器根据结构体大小，将结构体中的元素依次pushl到栈中，然后调用函数
 
 ### 三
 
@@ -183,5 +183,55 @@ main:
 ### 五
 
 ```asm
-
+.LC0:
+	.long 0
+	.long 1
+	.long 2
+	.long 3
+	.long 4
+	.long 5
+.LC1:
+	.string "%d\n"
+	.text
+.globl main
+	.type main,@function
+main:
+	pushl %ebp
+	movl %esp, %ebp
+	pushl %edi
+	pushl %esi
+	subl $48, %esp
+	andl $-16, %esp
+	movl $0, %eax
+	subl %eax, %esp
+	leal -40(%ebp), %edi
+	movl $.LC0, %esi
+	cld
+	movl $6, %eax
+	movl %eax, %ecx
+	rep
+	movsl
+	movl $6, -44(%ebp)
+	movl $7, -48(%ebp)
+	#数据初始化完成
+	leal -40(%ebp), %eax
+	addl $24, %eax
+	movl %eax, -52(%ebp)
+	subl $8, %esp
+	movl -52(%ebp), %eax
+	subl $4 , %eax
+	pushl %eax
+	pushl $.LC1
+	call printf
+	addl $16, %esp # -8 还有两个pushl
+	movl $0, %eax
+	leal -8(%ebp), %esp
+	popl %esi
+	popl %edi
+	leave
+	ret
 ```
+
+波浪线处：分配空间，初始化数组，使用的是题目二中提到的rep和movsl 数据传输指令。数组元素的初值一开始在.LC0 大概率是静态数据区，需要拷贝到程序运行的地方。
+
+### 六
