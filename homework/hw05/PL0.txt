@@ -21,3 +21,29 @@ case STOA: //(STOA,0,0) //而“间接写”指令 STOA 则将位
     stack[stack[top-1]] = stack[top];
     top-=2;
     break;
+
+int main()
+{
+    int i;
+    int* q;
+    int* a[10];
+    int* (*b[10])[10];
+    int* (*(*p)[10])[10];
+    i = 100; q = &i; a[1] = q; b[1] = &a; p = &b;
+    cout << p[0] << endl; //输出 100，待补全
+    cout << *p << endl; //输出 100，待补全
+}//程序
+
+a: array(10,pointer(int))
+p: pointer(array(10,array(10,pointer(int))))
+
+    int i;
+    int* q;
+    int* a[10];
+    int* (*b[10])[10];
+    int* (*(*p)[10])[10];
+
+    分别占用1,1,10,10,1个int大小空间，偏移量为0，1，2，12，22
+
+(*p)[1][0][1][0]
+p[0][1][0][1][0]
