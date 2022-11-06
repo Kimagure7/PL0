@@ -7,15 +7,10 @@ typedef struct POINT
     char z[N];
     struct POINT *next;
 } DOT;
-// void f(DOT p)
-// {
-//     p.x = 100;
-//     p.y = sizeof(p);
-//     p.z[1] = 'A';
-//     f(*(p.next));
-//} //第二题 C 程序
-
-int main(){
-    DOT p;
-    printf("%d",sizeof(p));
-}
+void f(DOT p)
+{
+    p.x = 100;
+    p.y = sizeof(p);
+    p.z[1] = 'A';
+    f(*(p.next));
+} //第二题 C 程序
