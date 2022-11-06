@@ -160,3 +160,28 @@ g:
 ```
 
 ### 四
+
+```asm
+main:
+	pushl %ebp
+	movl %esp,%ebp
+	subl $24, %esp
+	andl $-16, %esp
+	movl $0, %eax
+	subl %eax, %esp
+	movl $0, -20(%ebp)
+	movl $0, -16(%ebp)
+	movl $1, -12(%ebp)
+	movl $2, -12(%ebp)
+	movl $3, -8(%ebp)
+	movl $0, %eax
+	leave
+	ret
+```
+分配变量时考虑作用域，离开作用域后该变量空间即被废弃，可以被分配新值
+
+### 五
+
+```asm
+
+```
