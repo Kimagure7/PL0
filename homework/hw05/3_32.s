@@ -74,6 +74,7 @@ g:
 	movl	%edx, (%eax)
 	movl	8(%ebp), %eax
 	movl	(%eax), %eax
+	
 	leal	4(%eax), %edx
 	movl	8(%ebp), %eax
 	movl	%edx, (%eax)
