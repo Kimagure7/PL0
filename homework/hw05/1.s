@@ -1,64 +1,42 @@
 	.file	"1.c"
 	.text
-	.section	.rodata
+	.def	__main;	.scl	2;	.type	32;	.endef
+	.section .rdata,"dr"
 .LC0:
-	.string	"%x %s\n"
+	.ascii "%x %s\12\0"
 	.text
 	.globl	main
-	.type	main, @function
+	.def	main;	.scl	2;	.type	32;	.endef
+	.seh_proc	main
 main:
-.LFB0:
-	.cfi_startproc
-	endbr64
 	pushq	%rbp
-	.cfi_def_cfa_offset 16
-	.cfi_offset 6, -16
+	.seh_pushreg	%rbp
 	movq	%rsp, %rbp
-	.cfi_def_cfa_register 6
-	subq	$32, %rsp
-	movq	%fs:40, %rax
-	movq	%rax, -8(%rbp)
-	xorl	%eax, %eax
+	.seh_setframe	%rbp, 0
+	subq	$48, %rsp
+	.seh_stackalloc	48
+	.seh_endprologue
+	call	__main
 	movb	$50, -16(%rbp)
 	movb	$48, -15(%rbp)
 	movb	$49, -14(%rbp)
 	movb	$54, -13(%rbp)
 	movb	$0, -12(%rbp)
-	leaq	-16(%rbp), %rax
-	movq	%rax, -24(%rbp)
-	movl	-16(%rbp), %eax
-	movq	-24(%rbp), %rdx
-	movl	%eax, %esi
-	leaq	.LC0(%rip), %rdi
+	# 上面初始化2016\0
+	leaq	-16(%rbp), %rax #取出rbp的值 -16 赋给%rax
+	#对应c = (char *)&data;
+	movq	%rax, -8(%rbp) #一个指针64位
+	movl	-16(%rbp), %eax #movl一个字节 一个int4个字节
+	movq	-8(%rbp), %rdx
+	movq	%rdx, %r8
+	movl	%eax, %edx
+	leaq	.LC0(%rip), %rcx
+	call	printf
+	#以下为退出复原
 	movl	$0, %eax
-	call	printf@PLT
-	movl	$0, %eax
-	movq	-8(%rbp), %rcx
-	xorq	%fs:40, %rcx
-	je	.L3
-	call	__stack_chk_fail@PLT
-.L3:
-	leave
-	.cfi_def_cfa 7, 8
+	addq	$48, %rsp
+	popq	%rbp
 	ret
-	.cfi_endproc
-.LFE0:
-	.size	main, .-main
-	.ident	"GCC: (Ubuntu 9.4.0-1ubuntu1~20.04.1) 9.4.0"
-	.section	.note.GNU-stack,"",@progbits
-	.section	.note.gnu.property,"a"
-	.align 8
-	.long	 1f - 0f
-	.long	 4f - 1f
-	.long	 5
-0:
-	.string	 "GNU"
-1:
-	.align 8
-	.long	 0xc0000002
-	.long	 3f - 2f
-2:
-	.long	 0x3
-3:
-	.align 8
-4:
+	.seh_endproc
+	.ident	"GCC: (x86_64-win32-seh-rev0, Built by MinGW-W64 project) 8.1.0"
+	.def	printf;	.scl	2;	.type	32;	.endef
