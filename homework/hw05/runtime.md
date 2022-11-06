@@ -27,10 +27,10 @@ main:
 
 	movl	%eax, -28(%ebp)
 
-	#以下三行无法确定
-	movl	-24(%ebp), %edx
-	movl	-28(%ebp), %rdx
-	movl	%eax, %esi
+	subl 	$-4,
+	pushl	-28(%ebp)
+	pushl	-24(%ebp)
+	
 
 	pushl 	$.LC0
 	call	printf
@@ -40,3 +40,29 @@ main:
 	ret
 ```
 
+### 二
+
+汇编代码：
+1. N=2:
+```asm
+	.file "test1.c"
+	.text
+.globl f
+	.type f,@function
+f:
+	pushl %ebp
+	movl %esp, %ebp
+	movl $100, 8(%ebp)
+	movl $16 , 12(%ebp)
+	movb $65 , 16(%ebp) 
+	movl , %eax
+	pushl 
+	pushl 
+	pushl 
+	pushl 
+	call f
+	addl $16, %esp
+	leave
+	ret
+//当 N=2 时，生成的汇编代码片段。
+```

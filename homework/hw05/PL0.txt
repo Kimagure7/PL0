@@ -48,6 +48,4 @@ p: pointer(array(10,array(10,pointer(int))))
 (*p)[1][0][1][0]
 p[0][1][0][1][0]
 
-# TOBEDONE:
- PL0ДњТы
 
