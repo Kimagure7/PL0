@@ -54,15 +54,49 @@ f:
 	movl %esp, %ebp
 	movl $100, 8(%ebp)
 	movl $16 , 12(%ebp)
-	movb $65 , 16(%ebp) 
-	movl , %eax
-	pushl 
-	pushl 
-	pushl 
-	pushl 
+	movb $65 , 17(%ebp) 
+	movl 20(%ebp), %eax
+	pushl	12(%eax)
+	pushl	8(%eax)
+	pushl	4(%eax)
+	pushl	(%eax)
 	call f
 	addl $16, %esp
 	leave
 	ret
 //当 N=2 时，生成的汇编代码片段。
 ```
+
+2. N=11
+```asm
+	file "test1.c"
+	.text
+.globl f
+	.type f,@function
+f:
+	pushl %ebp
+	movl %esp, %ebp
+	pushl %edi
+	pushl %esi
+	movl $100, 8(%ebp)
+	movl $24, 12(%ebp)
+	movb $65, 17(%ebp)
+	subl $8, %esp
+	movl 28(%ebp), %eax
+	subl $24, %esp
+	movl %esp, %edi
+	movl %eax, %esi
+	cld
+	movl $24, %eax #确认大小
+	movl %eax, %ecx
+	rep
+	movsl
+	call f
+	addl $32, %esp
+	leal -8(%ebp), %esp
+	popl %esi
+	popl %edi
+	leave
+	ret
+```
+
