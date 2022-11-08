@@ -71,13 +71,14 @@ g:
 	movl	(%eax), %eax
 	movl	(%eax), %edx
 	addl	$1, %edx
+
 	movl	%edx, (%eax)
 	movl	8(%ebp), %eax
-	movl	(%eax), %eax
+	movl	(%eax), %eax # eax = *p
 	
-	leal	4(%eax), %edx
-	movl	8(%ebp), %eax
-	movl	%edx, (%eax)
+	leal	4(%eax), %edx # edx = (*p + 4)
+	movl	8(%ebp), %eax # eax = p
+	movl	%edx, (%eax)  # *p = (*p + 4)
 	nop
 	popl	%ebp
 	.cfi_restore 5

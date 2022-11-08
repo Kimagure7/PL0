@@ -27,7 +27,7 @@ main:
 
 	movl	%eax, -28(%ebp)
 
-	subl 	$-4,
+	subl 	$4,%esp
 	pushl	-28(%ebp)
 	pushl	-24(%ebp)
 	
@@ -126,7 +126,7 @@ main:
 	movl %eax, -64(%ebp) #指针p
 	movl $0, -60(%ebp)	 #i
 .L2:
-	cmpl $9,-56(%ebp)
+	cmpl $9,-60(%ebp)
 	jle .L5 #继续循环
 	jmp .L3
 .L5:
@@ -153,8 +153,8 @@ g:
 	movl 8(%ebp), %eax #传参的位置
 	movl (%eax), %eax
 	addl $1,(%eax) #(**p)++
-	movl 8(%ebp), %eax
-	addl $1,(%eax)
+	movl 8(%ebp), %eax #eax = p
+	addl $4,(%eax)
 	leave
 	ret
 ```
