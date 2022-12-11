@@ -1,0 +1,51 @@
+# http://staff.ustc.edu.cn/~qlzheng/compiler/pl0_ex1.pdf
+
+// l为层次差 a为数据地址
+case LOD: // 指令格式 (LOD, l, a)  /* 将变量值置于栈顶 */
+    stack[++top] = stack[base(stack, b, i.l) + i.a];
+    break;
+case STO: //指令格式 (STO, l, a) /* 将栈顶的值赋与某变量 */
+    stack[base(stack, b, i.l) + i.a] = stack[top];
+    printf("%d\n", stack[top]);
+    top--;
+    break;
+case LEA: //指令格式(LEA,l,a) //其中“取地址”指令 LEA 用来获取名字变量在“运行时栈-stack”上“地址偏移”
+    stack[++top] = base(stack, b, i.l) + i.a;
+    break;
+case LODA: //指令格式(LODA,0,0) //而“间接读”指令 LODA 则表示以当前栈顶单元的内容为“地址偏移”来读
+    //取相应单元的值，并将该值存储到原先的栈顶单元中。
+    stack[top] = stack[stack[top]];
+    break;
+case STOA: //(STOA,0,0) //而“间接写”指令 STOA 则将位
+    //于栈顶单元的内容，存入到次栈顶单元内容所代表的栈单元里，然后弹出栈顶和次栈顶
+    stack[stack[top-1]] = stack[top];
+    top-=2;
+    break;
+
+int main()
+{
+    int i;
+    int* q;
+    int* a[10];
+    int* (*b[10])[10];
+    int* (*(*p)[10])[10];
+    i = 100; q = &i; a[1] = q; b[1] = &a; p = &b;
+    cout << p[0] << endl; //输出 100，待补全
+    cout << *p << endl; //输出 100，待补全
+}//程序
+
+a: array(10,pointer(int))
+p: pointer(array(10,array(10,pointer(int))))
+
+    int i;
+    int* q;
+    int* a[10];
+    int* (*b[10])[10];
+    int* (*(*p)[10])[10];
+
+    分别占用1,1,10,10,1个int大小空间，共23个，偏移量为0，1，2，12，22
+
+(*p)[1][0][1][0]
+p[0][1][0][1][0]
+
+
