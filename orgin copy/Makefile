@@ -1,9 +1,9 @@
-CC = gcc
+CC = g++
 CFLAGS = -I. -g
 DEPS = PL0.h set.h
 OBJ = pl0.o set.o
 
-%.o: %.c $(DEPS)
+%.o: %.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 pl0: $(OBJ)
