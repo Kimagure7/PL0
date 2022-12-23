@@ -1,0 +1,12 @@
+var i,j,m,k[3][4];
+begin
+i := 2;
+j := 3;
+m := 4;
+k[i][j] := 5;
+
+
+print(j,i,m);
+print();
+print(k[i][j]);
+end.

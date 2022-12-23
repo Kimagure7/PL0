@@ -1,0 +1,15 @@
+var i,j,m,k[3],p[4],q[5];
+begin
+i := 2;
+j := 3;
+m := 4;
+k[i] := 5;
+p[i] := k[i];
+p[j] := 6;
+q[m] := p[i];
+
+
+print(j);
+print();
+print(p[j]);
+end.
