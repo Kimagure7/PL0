@@ -535,8 +535,15 @@ int factor(symset fsys) ////fsys是后继符号集合
 					break;
 				case ID_VARIABLE: // 变量情况下，生成一条LOD指令，格式为(LOD,层次差,数据地址)，将变量值置于栈顶
 					mk = (mask *)&table[i];
-					gen(LOD, level - mk->level, mk->address);
 					getsym(); // 继续读取下一个符号
+					//处理赋值表达式
+					if (sym == SYM_BECOMES)
+					{
+						getsym();
+						expression(fsys);
+						gen(STO, level - mk->level, mk->address);
+					}
+					gen(LOD, level - mk->level, mk->address);
 					break;
 				case ID_PROCEDURE: // 过程情况下，报错，因为pl0语法中过程名在任何情况下都不能出现在表达式中
 					error(21);	   // Procedure identifier can not be in an expression.
