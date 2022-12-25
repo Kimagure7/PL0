@@ -1,25 +1,6 @@
-var result;
-procedure banana;
-	procedure apple;
-	begin
-		print(1000);
-		longjmp(1,2);
-		print(2000);
-	end;
+var x;
+const m=2,n=3;
 begin
-	call apple;
-	call apple;
-	call apple;
-end;
-
-begin
-	if((result:=setjmp(1))=1) then
-		print(1111);
-	else if(result=2) then
-		print(2222);
-	else
-		begin
-			print(999);
-			call banana;
-		end;
+	if (m > n) then
+		x := m;
 end.
