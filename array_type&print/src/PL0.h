@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#define NRW        14     // number of reserved words
+#define NRW        15     // number of reserved words
 #define TXMAX      500    // length of identifier table
 #define MAXNUMLEN  14     // maximum number of digits in numbers
 // #define NSYM       10     // maximum number of symbols in array ssym and csym
@@ -42,6 +42,7 @@ enum symtype
 	SYM_END,//保留字，end
 	SYM_IF,//保留字，if
 	SYM_THEN,//保留字，then
+	SYM_ELSE,//kimagure 2022/12/25
 	SYM_WHILE,//保留字，while
 	SYM_DO,//保留字，do
 	SYM_CALL,//保留字，call
@@ -160,7 +161,7 @@ int  err;		//错误号
 int  cx;         // index of current instruction to be generated.
 int  level = 0;//层次
 int  tx = 0;//符号表表项编号（下标）
-
+int ifelse=0;//用于else
 char line[80];//读入的代码行
 
 instruction code[CXMAX];//代码段
@@ -173,7 +174,7 @@ char* word[NRW + 1] =
 	"odd", "procedure", "then", "var", "while",
 	"print",
 	//mahiru 2022-12-25
-	"setjmp","longjmp"
+	"setjmp","longjmp","else",
 };
 
 //保留字的属性值（用于区分是哪一个保留字）
@@ -183,7 +184,7 @@ int wsym[NRW + 1] =
 	SYM_IF, SYM_ODD, SYM_PROCEDURE, SYM_THEN, SYM_VAR, SYM_WHILE,
 	SYM_PRINT,
 	//mahiru 2022-12-25
-	SYM_SET_JUMP,SYM_LONG_JUMP
+	SYM_SET_JUMP,SYM_LONG_JUMP,SYM_ELSE,
 };
 
 //终结符的属性值（用于区分是哪一个运算符，包括分号）

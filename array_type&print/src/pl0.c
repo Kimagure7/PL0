@@ -54,108 +54,116 @@ void getch(void)
 // 从输入流中获取“标识”
 void getsym(void)
 {
-	int i, k;
-	char a[MAXIDLEN + 1]; // 存放标识符
-
-	while (ch == ' ' || ch == '\t') // 去除符号间或符号之前的空白字符
-		getch();
-
-	if (isalpha(ch)) // 判断开头是否为英文字母
-	{				 // 若是，则目标为保留字或标识符
-		k = 0;
-		do // 循环读入整个单词，并存放到串a[]中
-		{
-			if (k < MAXIDLEN)
-				a[k++] = ch;
-			getch();
-		} while (isalpha(ch) || isdigit(ch)); // 读入的标识符或者保留字只能由数字或字母组成
-		a[k] = 0;							  // 最后一个位置手动加入串的结束标志"\0"
-		strcpy(id, a);						  // 将读入的标识符或关键字存入串id[]
-		word[0] = id;						  // 将id放入关键字表word的首个位置（该位置初始时是保留的）
-		i = NRW;							  // 关键字数目
-		while (strcmp(id, word[i--]))
-			;					  // 从关键字列表末端开始遍历，逐个比较以便确定id是否是关键字
-		if (++i)				  // while循环结束时，i不为-1，说明id是保留字
-			sym = wsym[i];		  // 记录当前读入的保留字，这里使用wsym中的值标识是哪一个保留字（下标与通过字符标识的串数组word是对应的）
-		else					  // i为-1时，说明所有保留字都不匹配，读入的id是用户定义的标识符
-			sym = SYM_IDENTIFIER; // 记录标识符，并用symtype中的值标记为标识符
-	}
-	else if (isdigit(ch)) // 判断开头是否为数字------这正是标识符不允许以数字开头的原因
-	{					  // 目标是数字序列
-		k = num = 0;
-		sym = SYM_NUMBER; // 记录标识符，并用symtype中的值标记
-		do				  // 循环读入所有数字，并以**十进制**的格式存放到num中
-		{
-			num = num * 10 + ch - '0';
-			k++;
-			getch();
-		} while (isdigit(ch));
-		if (k > MAXNUMLEN)
-			error(25); // 数字的大小超出限制
-	}
-	// 下面开始识别是否是其他特殊符号
-	// else if分支检测可能由两个字符组成的符号
-	// else则检测其他预定义的符号
-	else if (ch == ':') //:=
+	if (ifelse == 1)
 	{
-		getch();
-		if (ch == '=')
-		{
-			sym = SYM_BECOMES; //:=
-			getch();
-		}
-		else
-		{
-			sym = SYM_NULL; // To be done: 识别到非法字符？但后面NULL多次出现在后继符号集合中...与错误处理有关？
-		}
-	}
-	else if (ch == '>') //> , >=
-	{
-		getch();
-		if (ch == '=')
-		{
-			sym = SYM_GEQ; //>=
-			getch();
-		}
-		else
-		{
-			sym = SYM_GTR; //>
-		}
-	}
-	else if (ch == '<') //< , <=
-	{
-		getch();
-		if (ch == '=')
-		{
-			sym = SYM_LEQ; //<=
-			getch();
-		}
-		// 注意，不等号为"<>"，而非"!="
-		else if (ch == '>')
-		{
-			sym = SYM_NEQ; //<>
-			getch();
-		}
-		else
-		{
-			sym = SYM_LES; // <
-		}
+		ifelse = 0;
 	}
 	else
-	{ // 其他字符
-		i = NSYM;
-		csym[0] = ch; // 用上面识别保留字相同的方法，识别是否为运算符
-		while (csym[i--] != ch)
-			;
-		if (++i) // 是运算符
-		{
-			sym = ssym[i];
+	{
+
+		int i, k;
+		char a[MAXIDLEN + 1]; // 存放标识符
+
+		while (ch == ' ' || ch == '\t') // 去除符号间或符号之前的空白字符
 			getch();
+
+		if (isalpha(ch)) // 判断开头是否为英文字母
+		{				 // 若是，则目标为保留字或标识符
+			k = 0;
+			do // 循环读入整个单词，并存放到串a[]中
+			{
+				if (k < MAXIDLEN)
+					a[k++] = ch;
+				getch();
+			} while (isalpha(ch) || isdigit(ch)); // 读入的标识符或者保留字只能由数字或字母组成
+			a[k] = 0;							  // 最后一个位置手动加入串的结束标志"\0"
+			strcpy(id, a);						  // 将读入的标识符或关键字存入串id[]
+			word[0] = id;						  // 将id放入关键字表word的首个位置（该位置初始时是保留的）
+			i = NRW;							  // 关键字数目
+			while (strcmp(id, word[i--]))
+				;					  // 从关键字列表末端开始遍历，逐个比较以便确定id是否是关键字
+			if (++i)				  // while循环结束时，i不为-1，说明id是保留字
+				sym = wsym[i];		  // 记录当前读入的保留字，这里使用wsym中的值标识是哪一个保留字（下标与通过字符标识的串数组word是对应的）
+			else					  // i为-1时，说明所有保留字都不匹配，读入的id是用户定义的标识符
+				sym = SYM_IDENTIFIER; // 记录标识符，并用symtype中的值标记为标识符
 		}
-		else // 不是运算符，直接判断为非法字符
+		else if (isdigit(ch)) // 判断开头是否为数字------这正是标识符不允许以数字开头的原因
+		{					  // 目标是数字序列
+			k = num = 0;
+			sym = SYM_NUMBER; // 记录标识符，并用symtype中的值标记
+			do				  // 循环读入所有数字，并以**十进制**的格式存放到num中
+			{
+				num = num * 10 + ch - '0';
+				k++;
+				getch();
+			} while (isdigit(ch));
+			if (k > MAXNUMLEN)
+				error(25); // 数字的大小超出限制
+		}
+		// 下面开始识别是否是其他特殊符号
+		// else if分支检测可能由两个字符组成的符号
+		// else则检测其他预定义的符号
+		else if (ch == ':') //:=
 		{
-			printf("Fatal Error: Unknown character.\n");
-			exit(1);
+			getch();
+			if (ch == '=')
+			{
+				sym = SYM_BECOMES; //:=
+				getch();
+			}
+			else
+			{
+				sym = SYM_NULL; // To be done: 识别到非法字符？但后面NULL多次出现在后继符号集合中...与错误处理有关？
+			}
+		}
+		else if (ch == '>') //> , >=
+		{
+			getch();
+			if (ch == '=')
+			{
+				sym = SYM_GEQ; //>=
+				getch();
+			}
+			else
+			{
+				sym = SYM_GTR; //>
+			}
+		}
+		else if (ch == '<') //< , <=
+		{
+			getch();
+			if (ch == '=')
+			{
+				sym = SYM_LEQ; //<=
+				getch();
+			}
+			// 注意，不等号为"<>"，而非"!="
+			else if (ch == '>')
+			{
+				sym = SYM_NEQ; //<>
+				getch();
+			}
+			else
+			{
+				sym = SYM_LES; // <
+			}
+		}
+		else
+		{ // 其他字符
+			i = NSYM;
+			csym[0] = ch; // 用上面识别保留字相同的方法，识别是否为运算符
+			while (csym[i--] != ch)
+				;
+			if (++i) // 是运算符
+			{
+				sym = ssym[i];
+				getch();
+			}
+			else // 不是运算符，直接判断为非法字符
+			{
+				printf("Fatal Error: Unknown character.\n");
+				exit(1);
+			}
 		}
 	}
 } // getsym
@@ -867,9 +875,23 @@ void statement(symset fsys)
 		}
 		// 跳转中使用回填技术，先记录跳转指令的指令地址cx，接着生成一条无目标的JPC指令，等待后续回填
 		cx1 = cx;
-		gen(JPC, 0, 0);	  // 生成一条无目标的JPC指令，格式为(JPC,0,程序地址)
-		statement(fsys);  // 处理语句
-		code[cx1].a = cx; // 回填之前的跳转指令的跳转目标地址
+		gen(JPC, 0, 0);	 // 生成一条无目标的JPC指令，格式为(JPC,0,程序地址)
+		statement(fsys); // 处理语句
+		getsym();
+		if (sym == SYM_ELSE) // 添加else
+		{
+			cx2 = cx;
+			gen(JMP, 0, 0); // then的结尾跳过else部分
+			code[cx1].a = cx;
+			getsym();
+			statement(fsys);
+			code[cx2].a = cx;
+		}
+		else
+		{
+			ifelse = 1; // 作用：跳过下一次getsym 因为添加else后比原先多执行了一次
+			code[cx1].a = cx;
+		}
 	}
 	// 以下的一段else if是pl0文档第15也错误诊断处理中关于镇定规则的示例
 	// 这一段的处理方法可以形成“分析时好像自动补上了遗漏的分号”的效果

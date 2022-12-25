@@ -1,7 +1,8 @@
-var i,j,a[2][2];
+const m=2,n=3;
+var x;
 begin
-    a[0][0] := a[1][1] := -2;
-    i := a[0][0];
-    j := a[1][1];
-    print(i,j);
+	if m > n then
+		x := m;
+	else
+		x:= n ;
 end.
