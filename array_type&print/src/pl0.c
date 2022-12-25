@@ -553,6 +553,14 @@ int factor(symset fsys) ////fsys是后继符号集合
 					amk = (ARRAY_MASK *)&table[i];	  // 获取数组名在符号表中的位置
 					getsym();						  // 获取第一个方括号
 					dimension_cite(amk);			  // 处理完维度时，已经读取了下一个符号
+					//处理赋值表达式
+					if (sym == SYM_BECOMES)
+					{
+						getsym();
+						expression(fsys); // 计算子表达式右值
+						gen(STOA, 0, 0);	  // 将栈顶的值，即子表达式右值存入左值，即次栈顶内数组元素
+						gen(INT, 0, 1);	  // 恢复原栈顶(左值的偏移)
+					}
 					gen(LODA, level - amk->level, 0); // 生成一条指令，将数组元素的数值置于栈顶
 				}									  // switch
 			}
