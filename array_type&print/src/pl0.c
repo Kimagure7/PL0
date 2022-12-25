@@ -511,6 +511,7 @@ int factor(symset fsys) ////fsys是后继符号集合
 	int expression(symset fsys); // 内部声明expression，使得后面能够正确调用
 	int i;
 	symset set;
+	symset set1;
 	ARRAY_MASK *amk;
 
 	test(facbegsys, fsys, 24); // 如果当前读入的符号不是factor的开始符号，则会报错，否则继续检查，期间遗漏的后继符号会假想“自动填补”，使得下一个开始处理的位置是某一个因子的开头或者结尾
@@ -597,6 +598,35 @@ int factor(symset fsys) ////fsys是后继符号集合
 			getsym();					   // 继续读取下一个符号
 			num_of_factor = -factor(fsys); // 根据pl0文档第5页，减号后必须是一个因子，因此调用因子函数
 			gen(OPR, 0, OPR_NEG);		   // 生成一条OPR指令，即算术或逻辑运算指令，格式为(OPR,0,运算类别)，这条指令是为了实现减号的作用
+		}
+		else if (sym == SYM_SET_JUMP)
+		{
+			getsym();
+			if (sym == SYM_LPAREN)
+			{
+				getsym();
+			}
+			else
+			{
+				error(40); // missing '('
+			}
+			// follow
+			set1 = createset(SYM_RPAREN, SYM_NULL);
+			set = uniteset(set1, fsys);
+			// 分析表达式
+			expression(set);
+			// 销毁follow
+			destroyset(set1);
+			destroyset(set);
+			if (sym == SYM_RPAREN)
+			{
+				getsym();
+			}
+			else
+			{
+				error(41); // missing ')'
+			}
+			// to be done
 		}
 		test(fsys, createset(SYM_LPAREN, SYM_NULL), 23); // 匹配后继符号，若成功则说明处理正确到达尾部，否则报错并试图通过填补假想的左括号，从而从另一个因子（表达式的首个位置为项，项的首个位置为因子）的处恢复分析
 	}													 // if
@@ -941,14 +971,14 @@ void statement(symset fsys)
 		}
 		else
 		{
-			error(40);//missing '('
+			error(40); // missing '('
 		}
-		//follow
-		set1 = createset(SYM_RPAREN,SYM_NULL);
-		set = uniteset(set1,fsys);
-		//分析表达式
+		// follow
+		set1 = createset(SYM_RPAREN, SYM_NULL);
+		set = uniteset(set1, fsys);
+		// 分析表达式
 		expression(set);
-		//销毁follow
+		// 销毁follow
 		destroyset(set1);
 		destroyset(set);
 		if (sym == SYM_RPAREN)
@@ -957,11 +987,9 @@ void statement(symset fsys)
 		}
 		else
 		{
-			error(41);//missing ')'
+			error(41); // missing ')'
 		}
-		//to be done
-
-
+		// to be done
 	}
 	else if (sym == SYM_LONG_JUMP)
 	{
@@ -987,7 +1015,7 @@ void statement(symset fsys)
 		{
 			error(43);
 		}
-		//to be done
+		// to be done
 
 		if (sym == SYM_RPAREN)
 		{
@@ -995,10 +1023,9 @@ void statement(symset fsys)
 		}
 		else
 		{
-			error(44);//missing ')'
+			error(44); // missing ')'
 		}
-		//to be done
-
+		// to be done
 	}
 	destroyset(set_print);
 	test(fsys, phi, 19); // 处理完语句之后，测试当前符号是否是后继符号，，若是说明处理正确，若不是则报错，并运用镇定规则跳过错误部分，直到遇到可以识别的符号
