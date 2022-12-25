@@ -144,8 +144,8 @@ char* err_msg[] =
 /* 40 */	"Missing '(' after setjmp",
 /* 41 */	"Missing ')' after setjmp",
 /* 42 */	"Missing '(' after longjmp",
-/* 43 */	"Missing ',' after setjmp",
-/* 44 */ 	"Missing ')' after setjmp"
+/* 43 */	"Missing ',' after longjmp",
+/* 44 */ 	"Missing ')' after longjmp"
 };
 
 //////////////////////////////////////////////////////////////////////
