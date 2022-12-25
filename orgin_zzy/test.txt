@@ -1,0 +1,8 @@
+var x;
+const m=2,n=3;
+begin
+	if m > n then
+		x := m;
+	else
+		x:= n ;
+end.
