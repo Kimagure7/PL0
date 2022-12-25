@@ -622,7 +622,7 @@ int factor(symset fsys) ////fsys是后继符号集合
 			set1 = createset(SYM_RPAREN, SYM_NULL);
 			set = uniteset(set1, fsys);
 			// 分析表达式
-			expression(set);
+			int index = expression(set);
 			// 销毁follow
 			destroyset(set1);
 			destroyset(set);
@@ -634,7 +634,7 @@ int factor(symset fsys) ////fsys是后继符号集合
 			{
 				error(41); // missing ')'
 			}
-			// to be done
+			gen(SET_JUMP,1,index);//使用0，1区分是否需要返回值，这涉及到是否修改栈顶
 		}
 		test(fsys, createset(SYM_LPAREN, SYM_NULL), 23); // 匹配后继符号，若成功则说明处理正确到达尾部，否则报错并试图通过填补假想的左括号，从而从另一个因子（表达式的首个位置为项，项的首个位置为因子）的处恢复分析
 	}													 // if
@@ -986,6 +986,7 @@ void statement(symset fsys)
 	}
 	else if (sym == SYM_SET_JUMP)
 	{
+		//statement情况不需要使用到setjump返回值，需要的是factor的情况
 		getsym();
 		if (sym == SYM_LPAREN)
 		{
@@ -999,7 +1000,7 @@ void statement(symset fsys)
 		set1 = createset(SYM_RPAREN, SYM_NULL);
 		set = uniteset(set1, fsys);
 		// 分析表达式
-		expression(set);
+		int index = expression(set);
 		// 销毁follow
 		destroyset(set1);
 		destroyset(set);
@@ -1011,7 +1012,7 @@ void statement(symset fsys)
 		{
 			error(41); // missing ')'
 		}
-		// to be done
+		gen(SET_JUMP,0,index);
 	}
 	else if (sym == SYM_LONG_JUMP)
 	{
@@ -1026,7 +1027,7 @@ void statement(symset fsys)
 		}
 		set1 = createset(SYM_COMMA, SYM_NULL);
 		set = uniteset(set1, fsys);
-		expression(set);
+		int index = expression(set);
 		destroyset(set1);
 		destroyset(set);
 		if (sym == SYM_COMMA)
@@ -1037,7 +1038,11 @@ void statement(symset fsys)
 		{
 			error(43);
 		}
-		// to be done
+		set1 = createset(SYM_RPAREN, SYM_NULL);
+		set = uniteset(set1, fsys);
+		int value = expression(set);
+		destroyset(set1);
+		destroyset(set);
 
 		if (sym == SYM_RPAREN)
 		{
@@ -1047,7 +1052,7 @@ void statement(symset fsys)
 		{
 			error(44); // missing ')'
 		}
-		// to be done
+		gen(LONG_JUMP,index,value);
 	}
 	destroyset(set_print);
 	test(fsys, phi, 19); // 处理完语句之后，测试当前符号是否是后继符号，，若是说明处理正确，若不是则报错，并运用镇定规则跳过错误部分，直到遇到可以识别的符号
@@ -1353,6 +1358,20 @@ void interpret()
 		case STOA: // STOA指令,“间接写”指令STOA则将位于栈顶单元的内容,存入到次栈顶单元内容所代表的栈单元里,然后弹出栈顶和次栈顶。
 			stack[base(stack, b, i.l) + stack[top - 1]] = stack[top];
 			top -= 2;
+			break;
+		case SET_JUMP:
+			jmp_buf[i.a].pc = pc;
+			jmp_buf[i.a].top = top;
+			if(i.l == 1){
+				//需要使用返回值，生成返回值放于栈顶 使用set调用返回值是0
+				stack[++top] = 0;				
+			}
+			break;
+		case LONG_JUMP:
+			pc = jmp_buf[i.l].pc;
+			top = jmp_buf[i.l].top;
+			stack[++top] = i.a;//新的返回值
+			//和之前的情况对比就是返回值不一样了
 			break;
 		} // switch
 		if (single_step)

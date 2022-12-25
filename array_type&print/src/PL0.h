@@ -15,6 +15,7 @@
 #define MAXSYM     30     // maximum number of symbols  
 
 #define STACKSIZE  1000   // maximum storage
+#define JMPMAX	   4096	  //max setjump buffer size
 
 enum symtype
 {
@@ -74,7 +75,7 @@ enum idtype
 //翻译后的汇编指令操作码的属性值
 enum opcode
 {
-	LIT, OPR, LOD, STO, CAL, INT, JMP, JPC, PRT, RDM, LODA, STOA
+	LIT, OPR, LOD, STO, CAL, INT, JMP, JPC, PRT, RDM, LODA, STOA,SET_JUMP, LONG_JUMP,
 };
 
 //汇编指令OPR的第三个参数，运算类型
@@ -166,6 +167,7 @@ char line[80];//读入的代码行
 
 instruction code[CXMAX];//代码段
 
+
 //保留字
 char* word[NRW + 1] =
 {
@@ -212,7 +214,7 @@ char csym[NSYM + 1] =
 //汇编指令的操作码
 char* mnemonic[MAXINS] =
 {
-	"LIT", "OPR", "LOD", "STO", "CAL", "INT", "JMP", "JPC", "PRT", "RDM", "LODA", "STOA"
+	"LIT", "OPR", "LOD", "STO", "CAL", "INT", "JMP", "JPC", "PRT", "RDM", "LODA", "STOA","SJP","LJP"//added: setjump longjump
 };
 
 //符号表表项数据结构
@@ -237,6 +239,15 @@ typedef struct
 	short address;
 	int value;
 } mask;
+
+//setjump&longjump添加
+typedef struct{
+	//setjump保存结构体，大小等于一个int类型，分别保存pc和栈顶指针位置
+	short pc;
+	short top;
+}size_jmp_buf;
+
+size_jmp_buf jmp_buf[JMPMAX];
 
 //输入文件
 FILE* infile;
