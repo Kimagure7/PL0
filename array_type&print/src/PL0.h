@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#define NRW        12     // number of reserved words
+#define NRW        14     // number of reserved words
 #define TXMAX      500    // length of identifier table
 #define MAXNUMLEN  14     // maximum number of digits in numbers
 // #define NSYM       10     // maximum number of symbols in array ssym and csym
@@ -54,7 +54,11 @@ enum symtype
 	SYM_RSQBRAC,//右方括号，"]"
 	SYM_LBRAC,//左大括号，"{"
 	SYM_RBRAC,//右大括号，"}"
-	SYM_PRINT//用于打印
+	SYM_PRINT,//用于打印
+	
+	//mahiru 2022-12-25
+	SYM_SET_JUMP,//setjump()
+	SYM_LONG_JUMP//longjmp()
 };
 
 //标识符类型：常数、变量、过程、数组
@@ -134,7 +138,14 @@ char* err_msg[] =
 /* 36 */	"The subscript of a dimension exopected.",
 /* 37 */	"Missing ']'.",
 /* 38 */	"Not a allowed data type for now.",
-/* 39 */	"."
+/* 39 */	".",
+
+//mahiru 2022-12-25
+/* 40 */	"Missing '(' after setjmp",
+/* 41 */	"Missing ')' after setjmp",
+/* 42 */	"Missing '(' after longjmp",
+/* 43 */	"Missing ',' after setjmp",
+/* 44 */ 	"Missing ')' after setjmp"
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -160,7 +171,9 @@ char* word[NRW + 1] =
 	"", /* place holder */
 	"begin", "call", "const", "do", "end","if",
 	"odd", "procedure", "then", "var", "while",
-	"print"
+	"print",
+	//mahiru 2022-12-25
+	"setjmp","longjmp"
 };
 
 //保留字的属性值（用于区分是哪一个保留字）
@@ -168,7 +181,9 @@ int wsym[NRW + 1] =
 {
 	SYM_NULL, SYM_BEGIN, SYM_CALL, SYM_CONST, SYM_DO, SYM_END,
 	SYM_IF, SYM_ODD, SYM_PROCEDURE, SYM_THEN, SYM_VAR, SYM_WHILE,
-	SYM_PRINT
+	SYM_PRINT,
+	//mahiru 2022-12-25
+	SYM_SET_JUMP,SYM_LONG_JUMP
 };
 
 //终结符的属性值（用于区分是哪一个运算符，包括分号）

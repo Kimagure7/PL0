@@ -536,7 +536,7 @@ int factor(symset fsys) ////fsys是后继符号集合
 				case ID_VARIABLE: // 变量情况下，生成一条LOD指令，格式为(LOD,层次差,数据地址)，将变量值置于栈顶
 					mk = (mask *)&table[i];
 					getsym(); // 继续读取下一个符号
-					//处理赋值表达式
+					// 处理赋值表达式
 					if (sym == SYM_BECOMES)
 					{
 						getsym();
@@ -549,16 +549,16 @@ int factor(symset fsys) ////fsys是后继符号集合
 					error(21);	   // Procedure identifier can not be in an expression.
 					getsym();	   // 继续读取下一个符号
 					break;
-				case ID_ARRAY:						  // 数组
-					amk = (ARRAY_MASK *)&table[i];	  // 获取数组名在符号表中的位置
-					getsym();						  // 获取第一个方括号
-					dimension_cite(amk);			  // 处理完维度时，已经读取了下一个符号
-					//处理赋值表达式
+				case ID_ARRAY:					   // 数组
+					amk = (ARRAY_MASK *)&table[i]; // 获取数组名在符号表中的位置
+					getsym();					   // 获取第一个方括号
+					dimension_cite(amk);		   // 处理完维度时，已经读取了下一个符号
+					// 处理赋值表达式
 					if (sym == SYM_BECOMES)
 					{
 						getsym();
 						expression(fsys); // 计算子表达式右值
-						gen(STOA, 0, 0);	  // 将栈顶的值，即子表达式右值存入左值，即次栈顶内数组元素
+						gen(STOA, 0, 0);  // 将栈顶的值，即子表达式右值存入左值，即次栈顶内数组元素
 						gen(INT, 0, 1);	  // 恢复原栈顶(左值的偏移)
 					}
 					gen(LODA, level - amk->level, 0); // 生成一条指令，将数组元素的数值置于栈顶
@@ -931,6 +931,74 @@ void statement(symset fsys)
 		{			   // 函数名后没有括号，此时视为函数指针，这是暂时不能处理的数据类型
 			error(38); //"Not a allowed data type for now."
 		}
+	}
+	else if (sym == SYM_SET_JUMP)
+	{
+		getsym();
+		if (sym == SYM_LPAREN)
+		{
+			getsym();
+		}
+		else
+		{
+			error(40);//missing '('
+		}
+		//follow
+		set1 = createset(SYM_RPAREN,SYM_NULL);
+		set = uniteset(set1,fsys);
+		//分析表达式
+		expression(set);
+		//销毁follow
+		destroyset(set1);
+		destroyset(set);
+		if (sym == SYM_RPAREN)
+		{
+			getsym();
+		}
+		else
+		{
+			error(41);//missing ')'
+		}
+		//to be done
+
+
+	}
+	else if (sym == SYM_LONG_JUMP)
+	{
+		getsym();
+		if (sym == SYM_LPAREN)
+		{
+			getsym();
+		}
+		else
+		{
+			error(42);
+		}
+		set1 = createset(SYM_COMMA, SYM_NULL);
+		set = uniteset(set1, fsys);
+		expression(set);
+		destroyset(set1);
+		destroyset(set);
+		if (sym == SYM_COMMA)
+		{
+			getsym();
+		}
+		else
+		{
+			error(43);
+		}
+		//to be done
+
+		if (sym == SYM_RPAREN)
+		{
+			getsym();
+		}
+		else
+		{
+			error(44);//missing ')'
+		}
+		//to be done
+
 	}
 	destroyset(set_print);
 	test(fsys, phi, 19); // 处理完语句之后，测试当前符号是否是后继符号，，若是说明处理正确，若不是则报错，并运用镇定规则跳过错误部分，直到遇到可以识别的符号
