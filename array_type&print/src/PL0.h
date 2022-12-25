@@ -209,7 +209,7 @@ char csym[NSYM + 1] =
 	'{','}'
 };
 
-#define MAXINS   12
+#define MAXINS   14
 
 //汇编指令的操作码
 char* mnemonic[MAXINS] =
