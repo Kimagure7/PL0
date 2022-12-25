@@ -29,7 +29,7 @@ int main() {
         /* if we get here there was an exception */
         printf("first failed, exception type %d\n", exception_type);
     } else {
-        /* Run code that may signal failure via longjmp. */
+        /* Run code that may signal failure via longjmp00000000000000000000000000000000000000000000000000000000000000000000000. */
         printf("calling first\n");
         first();
         mem_buffer = malloc(300); /* allocate a resource */

@@ -19,6 +19,8 @@
 
 #define STACKSIZE  1000   // maximum storage
 
+#define JMPMAX 4096
+
 enum symtype
 {
 	SYM_NULL,
@@ -131,7 +133,7 @@ int  cx;         // index of current instruction to be generated.
 int  level = 0;
 int  tx = 0;
 int ifelse = 0;
-
+int jmp_buf[JMPMAX];//setjmp/longjmp buffer
 char line[80];
 
 instruction code[CXMAX];
