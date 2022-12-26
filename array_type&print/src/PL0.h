@@ -153,6 +153,7 @@ char* err_msg[] =
 //////////////////////////////////////////////////////////////////////
 char ch;         // last character read
 int  sym;        // last symbol read
+int sym_old;     //处理if then 无else情况
 char id[MAXIDLEN + 1]; // last identifier read
 int  num;        // last number read
 int  cc;         // character count

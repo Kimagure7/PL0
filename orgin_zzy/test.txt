@@ -3,6 +3,4 @@ var x;
 begin
 	if m > n then
 		x := m;
-	else
-		x:= n ;
 end.

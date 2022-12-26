@@ -56,11 +56,17 @@ void getsym(void)
 {
 	if (ifelse == 1)
 	{
+		//先回复sym
+		ifelse = 2;
+		sym_old = sym;
+		sym = SYM_SEMICOLON;	
+	}
+	else if(ifelse==2){
 		ifelse = 0;
+		sym = sym_old;
 	}
 	else
 	{
-
 		int i, k;
 		char a[MAXIDLEN + 1]; // 存放标识符
 
@@ -877,7 +883,12 @@ void statement(symset fsys)
 		cx1 = cx;
 		gen(JPC, 0, 0);	 // 生成一条无目标的JPC指令，格式为(JPC,0,程序地址)
 		statement(fsys); // 处理语句
-		getsym();
+		if(sym == SYM_SEMICOLON){
+			getsym();
+		}
+		else{
+			error(10);//"';' expected."
+		}
 		if (sym == SYM_ELSE) // 添加else
 		{
 			cx2 = cx;
@@ -891,6 +902,7 @@ void statement(symset fsys)
 		{
 			ifelse = 1; // 作用：跳过下一次getsym 因为添加else后比原先多执行了一次
 			code[cx1].a = cx;
+			getsym();//恢复现场
 		}
 	}
 	// 以下的一段else if是pl0文档第15也错误诊断处理中关于镇定规则的示例
