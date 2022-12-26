@@ -1,0 +1,7 @@
+var x,y,z;
+begin
+	x:=3;
+	y:=3;
+	if (x:=1) < (z:=y:=2) then
+		print(x,z);
+end.
