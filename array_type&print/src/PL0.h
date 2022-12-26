@@ -177,7 +177,7 @@ char* word[NRW + 1] =
 	"odd", "procedure", "then", "var", "while",
 	"print",
 	//mahiru 2022-12-25
-	"setjmp","longjmp","else",
+	"setjmp","longjmp","else"
 };
 
 //保留字的属性值（用于区分是哪一个保留字）
@@ -187,7 +187,7 @@ int wsym[NRW + 1] =
 	SYM_IF, SYM_ODD, SYM_PROCEDURE, SYM_THEN, SYM_VAR, SYM_WHILE,
 	SYM_PRINT,
 	//mahiru 2022-12-25
-	SYM_SET_JUMP,SYM_LONG_JUMP,SYM_ELSE,
+	SYM_SET_JUMP,SYM_LONG_JUMP,SYM_ELSE
 };
 
 //终结符的属性值（用于区分是哪一个运算符，包括分号）
