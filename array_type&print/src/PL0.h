@@ -242,9 +242,12 @@ typedef struct
 
 //setjump&longjump添加
 typedef struct{
-	//setjump保存结构体，大小等于一个int类型，分别保存pc和栈顶指针位置
-	short pc;
-	short top;
+	//setjump保存结构体
+	//理论上pc需要15bit，top和base分别需要10bit，略难
+	//助教说无所谓
+	int pc;
+	int top;
+	int base;
 }size_jmp_buf;
 
 size_jmp_buf jmp_buf[JMPMAX];

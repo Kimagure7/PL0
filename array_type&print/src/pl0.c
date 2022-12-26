@@ -1362,14 +1362,17 @@ void interpret()
 		case SET_JUMP:
 			jmp_buf[i.a].pc = pc;
 			jmp_buf[i.a].top = top;
+			jmp_buf[i.a].base = b;
 			if(i.l == 1){
 				//需要使用返回值，生成返回值放于栈顶 使用set调用返回值是0
+				//只有作为factor才会需要返回值，statement是不需要的
 				stack[++top] = 0;				
 			}
 			break;
 		case LONG_JUMP:
 			pc = jmp_buf[i.l].pc;
 			top = jmp_buf[i.l].top;
+			b = jmp_buf[i.a].base;
 			stack[++top] = i.a;//新的返回值
 			//和之前的情况对比就是返回值不一样了
 			break;
