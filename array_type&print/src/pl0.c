@@ -211,16 +211,19 @@ void gen(int x, int y, int z)
 //  （3） 整数 n，表示有关错误的诊断号；
 void test(symset s1, symset s2, int n)
 {
-    symset s;
-    if (!inset(sym, s1)) // 如果当前的符号不在同步符号集中，报错，并开始应用镇定规则
-    {
-        error(n);
-        s = uniteset(s1, s2);  // 向同步符号集合中加入新的停止符号，并将合并后的集合存入临时集合s中
-        while (!inset(sym, s)) // 如果当前符号不在扩展后的集合中，暂时跳过，继续读取后面的符号（保持镇定）
-            getsym();
-        // 注意，s2中的符号是镇定规则中所说的“不该被盲目忽略的符号”
-        destroyset(s); // 销毁临时空间
-    }
+	symset s;
+	if (!inset(sym, s1)) // 如果当前的符号不在同步符号集中，报错，并开始应用镇定规则
+	{
+		if (!gen_OK)
+		{
+			error(n);
+		}
+		s = uniteset(s1, s2);  // 向同步符号集合中加入新的停止符号，并将合并后的集合存入临时集合s中
+		while (!inset(sym, s)) // 如果当前符号不在扩展后的集合中，暂时跳过，继续读取后面的符号（保持镇定）
+			getsym();
+		// 注意，s2中的符号是镇定规则中所说的“不该被盲目忽略的符号”
+		destroyset(s); // 销毁临时空间
+	}
 } // test
 
 //////////////////////////////////////////////////////////////////////
@@ -1472,6 +1475,7 @@ void block(symset fsys)
     int cx0; // initial code index
     mask *mk;
     int block_dx;
+    int start_init = cx_init;
     int savedTx;
     symset set1, set;
 
@@ -1600,7 +1604,7 @@ void block(symset fsys)
     test(set, declbegsys, 7); //"Statement expected."
     destroyset(set1);         // 销毁临时生成的变量集合
     destroyset(set);
-
+    int end_init = cx_init;
     code[mk->address].a = cx; // 回填上面JMP指令的跳转地址
     // cx似乎无变化，有必要使用回填技术吗
     // 有，因为block会改变
@@ -1608,6 +1612,7 @@ void block(symset fsys)
     cx0 = cx;         // 起始地址标记为此时的cx
     // 此时block_dx是程序中声明的变量、常量等总共将要占用的空间
     gen(INT, 0, block_dx);                              // 在程序体的起始位置加入一条INT指令，格式为(INT,0,常量)，作用是为程序开辟空间
+    init_code_insert(start_init, end_init);				// 在INT后，函数体之前，插入本函数体初始化所需的代码
     set1 = createset(SYM_SEMICOLON, SYM_END, SYM_NULL); // 将语句序列的后继符号分号与end加入后继符号集合
     set = uniteset(set1, fsys);
     statement(set);   // 处理语句，对应语法图最下方的“语句”
