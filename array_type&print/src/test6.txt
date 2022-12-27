@@ -7,7 +7,9 @@ procedure banana;
 		print(2000);
 	end;
 begin
-	for(var i:(0,10)) call apple;
+	call apple;
+	call apple;
+	call apple;
 end;
 
 begin

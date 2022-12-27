@@ -1,6 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
-#define NRW        15     // number of reserved words
+#define NRW        17     // number of reserved words
 #define TXMAX      500    // length of identifier table
 #define MAXNUMLEN  14     // maximum number of digits in numbers
 // #define NSYM       10     // maximum number of symbols in array ssym and csym
@@ -60,7 +62,12 @@ enum symtype
 	
 	//mahiru 2022-12-25
 	SYM_SET_JUMP,//setjump()
-	SYM_LONG_JUMP//longjmp()
+	SYM_LONG_JUMP,//longjmp()
+
+	// jk
+	SYM_RANDOM,
+	SYM_FOR,//用于for
+	SYM_COLON//用语for的:
 };
 
 //标识符类型：常数、变量、过程、数组
@@ -147,7 +154,12 @@ char* err_msg[] =
 /* 41 */	"Missing ')' after setjmp",
 /* 42 */	"Missing '(' after longjmp",
 /* 43 */	"Missing ',' after longjmp",
-/* 44 */ 	"Missing ')' after longjmp"
+/* 44 */ 	"Missing ')' after longjmp",
+
+// jk 2022-12-27
+/* 45 */    "Missing (",
+/* 46 */    "Missing var in for statement",
+/* 47 */    "Missing : in for statement"
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -177,7 +189,9 @@ char* word[NRW + 1] =
 	"odd", "procedure", "then", "var", "while",
 	"print",
 	//mahiru 2022-12-25
-	"setjmp","longjmp","else"
+	"setjmp","longjmp","else",
+	// jk
+	"random", "for"
 };
 
 //保留字的属性值（用于区分是哪一个保留字）
@@ -187,7 +201,9 @@ int wsym[NRW + 1] =
 	SYM_IF, SYM_ODD, SYM_PROCEDURE, SYM_THEN, SYM_VAR, SYM_WHILE,
 	SYM_PRINT,
 	//mahiru 2022-12-25
-	SYM_SET_JUMP,SYM_LONG_JUMP,SYM_ELSE
+	SYM_SET_JUMP,SYM_LONG_JUMP,SYM_ELSE,
+	// jk
+	SYM_RANDOM, SYM_FOR
 };
 
 //终结符的属性值（用于区分是哪一个运算符，包括分号）

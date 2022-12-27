@@ -119,7 +119,7 @@ void getsym(void)
 			}
 			else
 			{
-				sym = SYM_NULL; // To be done: 识别到非法字符？但后面NULL多次出现在后继符号集合中...与错误处理有关？
+				sym = SYM_COLON; // To be done: 识别到非法字符？但后面NULL多次出现在后继符号集合中...与错误处理有关？
 			}
 		}
 		else if (ch == '>') //> , >=
@@ -642,6 +642,33 @@ int factor(symset fsys) ////fsys是后继符号集合
 			}
 			gen(SET_JUMP,1,index);//使用0，1区分是否需要返回值，这涉及到是否修改栈顶
 		}
+		else if (sym == SYM_RANDOM)
+		{
+			getsym();
+			if (sym != SYM_LPAREN)
+			{
+				error(45);
+			}
+			else
+			{
+				getsym();
+			}
+
+			if (sym == SYM_RPAREN)
+			{
+				getsym();
+				gen(LIT, 0, 1);
+				num_of_factor = rand();
+				gen(RDM, 0, -1);
+			}
+			else
+			{
+				int ret = expression(uniteset(fsys, createset(SYM_RPAREN, SYM_NULL)));
+				num_of_factor = rand() % ret;
+				gen(RDM, 0, ret);
+				getsym();
+			}
+		}
 		test(fsys, createset(SYM_LPAREN, SYM_NULL), 23); // 匹配后继符号，若成功则说明处理正确到达尾部，否则报错并试图通过填补假想的左括号，从而从另一个因子（表达式的首个位置为项，项的首个位置为因子）的处恢复分析
 	}													 // if
 	else if (sym == SYM_RSQBRAC)
@@ -959,6 +986,136 @@ void statement(symset fsys)
 		statement(fsys);  // do后的处理语句
 		gen(JMP, 0, cx1); // 生成一条JMP（无条件）跳转指令，格式为(JMP,0,程序地址)，跳转回条件判断部分
 		code[cx2].a = cx; // 回填跳转指令的目标地址（循环结束处）
+	}
+	else if (sym == SYM_FOR) // 识别到保留字 for, 开始处理 for 循环语句
+	{
+		getsym();
+		if (sym != SYM_LPAREN)
+		{
+			error(45);
+		}
+		else
+		{
+			getsym();
+		}
+
+		if (sym != SYM_VAR)
+		{
+			error(46);
+		}
+		else
+		{
+			getsym();
+		}
+
+		int rec_pos = -1;
+		if (sym != SYM_IDENTIFIER)
+		{
+			error(4);
+		}
+		else
+		{
+			enter(ID_VARIABLE);
+			rec_pos = position(id);
+			gen(INT, 0, 1);
+			getsym();
+		}
+
+		if (sym != SYM_COLON)
+		{
+			error(47);
+		}
+		else
+		{
+			getsym();
+		}
+
+		if (sym != SYM_LPAREN)
+		{
+			error(45);
+		}
+		else
+		{
+			getsym();
+		}
+
+		symset set_for_1, set_for_2;
+		set_for_1 = createset(SYM_COMMA, SYM_NULL);
+		set_for_2 = uniteset(fsys, set_for_1);
+		int low = expression(set_for_2);
+		destroyset(set_for_1);
+		destroyset(set_for_2);
+
+		mask *mk = (mask *)&table[rec_pos];
+		gen(STO, level - mk->level, mk->address);
+		cx1 = cx;
+		gen(LOD, level - mk->level, mk->address);	
+		getsym();
+
+		set_for_1 = createset(SYM_COMMA, SYM_RPAREN, SYM_NULL);
+		set_for_2 = uniteset(fsys, set_for_1);
+		int up = expression(set_for_2);
+		destroyset(set_for_1);
+		destroyset(set_for_2);
+
+		if (low < up)
+		{
+			gen(OPR, 0, OPR_LES);
+		}
+		else
+		{
+			gen(OPR, 0, OPR_GTR);
+		}
+		cx2 = cx;
+		gen(JPC, 0, 0);
+
+		int step_value = 1;
+		if (sym != SYM_RPAREN)
+		{
+			// given step
+			getsym();
+			if (sym == SYM_MINUS)
+			{
+				getsym();
+				step_value = -num;
+			}
+			else
+			{
+				step_value = num;
+			}
+
+			getsym();
+		}
+
+		getsym();
+		if (sym != SYM_RPAREN)
+		{
+			error(22);
+		}
+		else
+		{
+			getsym();
+		}
+
+		statement(fsys);
+
+		if (step_value >= 0)
+		{
+			gen(LIT, 0, step_value);
+		}
+		else
+		{
+			gen(LIT, 0, -step_value);
+			gen(OPR, 0, OPR_NEG);
+		}
+		gen(LOD, level - mk->level, mk->address);
+		gen(OPR, 0, OPR_ADD);
+		gen(STO, level - mk->level, mk->address);
+		gen(JMP, 0, cx1);
+		code[cx2].a = cx;
+		gen(INT, 0, -1);
+		tx--;
+		// must 恢复现场
 	}
 	else if (sym == SYM_PRINT)
 	{ // 检测到内置函数print
@@ -1364,6 +1521,16 @@ void interpret()
 				printf("%d ", stack[top--]);
 			}
 			break;
+		case RDM:
+			if (i.a <= 0)
+			{
+				stack[top] = rand();
+			}
+			else
+			{
+				stack[top] = rand() % i.a;
+			}
+			break;
 		case LODA:												  // LODA指令,“间接读”指令LODA表示以当前栈顶单元的内容为“地址偏移”来读取相应单元的值,格式为(LODA,层次差,0),并将该值存储到原先的栈顶单元中
 			stack[top] = stack[base(stack, b, i.l) + stack[top]]; // 以栈顶单元的值作为偏移量，读取变量的值到原栈顶的位置
 			break;
@@ -1404,12 +1571,13 @@ void interpret()
 } // interpret
 
 //////////////////////////////////////////////////////////////////////
-void main()
+int main()
 {
 	FILE *hbin;
 	char s[80];
 	int i;
 	symset set, set1, set2;
+	srand((unsigned)time(NULL));
 
 	// printf("Please input source file name: "); // get file name to be compiled
 	// scanf("%s", s);
@@ -1428,8 +1596,8 @@ void main()
 
 	// create begin symbol sets
 	declbegsys = createset(SYM_CONST, SYM_VAR, SYM_PROCEDURE, SYM_NULL);
-	statbegsys = createset(SYM_BEGIN, SYM_CALL, SYM_IF, SYM_WHILE,SYM_SET_JUMP,SYM_LONG_JUMP,SYM_NULL);
-	facbegsys = createset(SYM_IDENTIFIER, SYM_NUMBER, SYM_LPAREN, SYM_MINUS, SYM_SET_JUMP,SYM_NULL);//mahiru 2022-12-26 add setjmp
+	statbegsys = createset(SYM_BEGIN, SYM_CALL, SYM_IF, SYM_WHILE, SYM_FOR, SYM_PRINT, SYM_SET_JUMP, SYM_LONG_JUMP, SYM_NULL); // jk 2022-12-27 add for and print
+	facbegsys = createset(SYM_RANDOM, SYM_IDENTIFIER, SYM_NUMBER, SYM_LPAREN, SYM_MINUS, SYM_SET_JUMP,SYM_NULL);//mahiru 2022-12-26 add setjmp; jk 2022-12-27 add random
 
 	err = cc = cx = ll = 0; // initialize global variables
 	ch = ' ';
