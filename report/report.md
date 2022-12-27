@@ -1,53 +1,63 @@
-
-
 ## 修改后的PL/0语言文本
 
 $$
-digit&      &->&   (0-9)\\
-number&     &->&   (digit)^+\\
-letter&      &->&   [A-Za-z]\\
-identifier&       &->&   letter[(letter|digit)]^*\\
-relop&  &->&   < | > | <> | <= | >= |  = \\
-op&         &->&   + | - | \times | / | , | . | ; | ( | ) | = | &\\
-word&              &->&      begin | const | call | do | end | if |else | odd |\\
-&&&procedure |while | for |var | then|setjmp|longjmp
+digit&      &->&  \ (\ 0-9\ )\\
+number&     &->&  \ (\ digit\ )^+\\
+letter&      &->&  \ [\ A-Za-z\ ]\\
+identifier&       &->&  \ letter\ [\ (\ letter\ |\ digit\ )\ ]^*\\
+relop&  &->&  \ <\ |\ >\ |\ <>\ |\ <=\ |\ >=\ |\ =\ \\
+op&         &->&  \ +\ |\ -\ |\ *\ |\ /\ |\ ,\ |\ .\ |\ ;\ |\ (\ |\ )\ |\ =\ |\ :\\
+word&              &->&     \ begin\ |\ const\ |\ call\ |\ do\ |\ end\ |\ if\ |\ else\ |\ odd\ |\\
+&&&procedure\ |\ while\ |\ for\ |\ var\ |\ then\ |\ setjmp\ |\ longjmp
 $$
 
 
 $$
 \begin{align}
-program ::=&\\
+program\ ::=&\\
 			&body.\\
-body ::=&\\
-      	&'const' \quad \{identifier '=' expression,\}<identifier '=' expression ';'>\\
-        &|'var'\quad\{identifier \{'['expression']'\},\}<identifier\{'['expression']'\}';'> \\ 
-        &|procedure\quad identifier ';' body ';'\\
-        &| stmt_{mul}\\
-stmt_{mul} ::=&\\
-       &{stmt ';'}\\
-stmt ::=&\\
-        &identifier\{'['expression']'\} ':=' expression\\
-        &| 'call' identifier\\
-        &| 'begin' stmt_{mul} 'end'\\
-        &| 'if' <condition> then \quad stmt \quad 'else'\quad  stmt\\
-        &| 'if' <condition> then \quad stmt\\
-        &| 'while' <condition> 'do' stmt\\
-		&|'for''(' ((expression';')|';') \quad [expression] ';'[expression] ';' /tobedone \\
-		&|	'setjmp(' expression ')' \\
-		&|	'longjmp(' expression ',' expression ')' \\
-condition ::=&\\
-           &'odd' \quad expression\\
-           &| expression \quad ('='| '<>'| '<'| '>'|'<='| '>=')\quad expression\\
-expression ::=&\\
-           &term \quad {('+'| '-') \quad term}\\
-term ::=&\\
-        &factor \quad {('*'| '/') \quad term}\\
-factor ::=&\\
-        &identifier\{'['number']'\}\{'=' expresion\ }\\
-        &| number\\
-        &| '-'expression\\
-        &| '('expression')'\\
-        &|	'setjmp(' expression ')' 
+body\ ::=&\\
+      	&'const' \ \{\ identifier\ '='\ expression\ ','\}\ <\ identifier\ '='\ expression\ ';'\ >\\
+        &|\ 'var'\ \{\ identifier\ \{\ '['\ expression\ ']'\ \}\ ','\ \}\ <\ identifier\ \{\ '['\ expression\ ']'\ \}\\
+        &|\ 'var'\ \{\ identifier\ \{\ '['\ expression\ ']'\ \}\ ','\ \}\ <\ identifier\ \{\ '['\ expression\ ']'\ \}\ '='\ initializer\ ';'> \\ 
+        &|\ procedure\ identifier\ ';'\ body\ ';'\\
+        &|\ multi_statement\\
+multi_statement ::=&\\
+       &\{stmt\ ';'\}\\
+statement\ ::=&\\
+		&'const' \ \{\ identifier\ '='\ expression\ ','\ \}\ <\ identifier\ '='\ expression\ ';'\ >\\
+        &|\ 'var'\ \{\ identifier\ \{\ '['\ expression\ ']'\ \}\ ','\ \}\ <\ identifier\ \{\ '['\ expression\ ']'\ \}\\
+        &|\ 'var'\ \{\ identifier\ \{\ '['\ expression\ ']'\ \}\ ','\ \}\ <\ identifier\ \{\ '['\ expression\ ']'\ \}\ '='\ initializer\ ';'>\\ 
+        &|\ identifier\ \{\ '['\ expression\ ']'\ \}\ ':='\ expression\ ';'\\
+        &|\ 'call'\ identifier\ ';'\\
+        &|\ 'begin'\ multi_statement\ 'end'\ ';'\\
+        &|\ 'if'\ <\ condition\ >\ then\ statement\ 'else'\ statement\ ';'\\
+        &|\ 'if'\ <\ condition\ >\ then\ statement\ ';'\\
+        &|\ 'while'\ <\ condition\ >\ 'do'\ statement\ ';'\\
+		&|\ 'for'\ '('\ 'var'\ identifier\ ':'\ '('\ expression\ ','\ expression\ ','\ expression\ ')'\ ')' \ statement\ ';'\\
+		&|\ 'setjmp'\ '('\ expression\ ')'\ ';'\\
+		&|\ 'longjmp'\ '('\ expression\ ','\ expression\ ')'\ ';'\\
+condition\ ::=&\\
+           &'odd'\ expression\\
+           &|\ expression\ (\ '='\ |\ '<>'\ |\ '<'\ |\ '>'\ |\ '<='\ |\ '>='\ )\ expression\\
+expression\ ::=&\\
+           &term\ \{(\ '+'\ |\ '-'\ )\ term\}\\
+term\ ::=&\\
+        &factor\ \{(\ '*'\ |\ '/'\ )\ \ term\}\\
+factor\ ::=&\\
+        &identifier\ \{\ '['\ number\ ']'\ \}\\
+        &|\ identifier\ \{\ '['\ number\ ']'\ \}\ \{\ '='\ expression\ \}\\
+        &|\ number\\
+        &|\ '-'\ expression\\
+        &|\ '('\ expression\ ')'\\
+        &|\ 'setjmp'\ '('\ expression\ ')'\\ 
+ initializer\ ::=&\\
+ 		&expression\\
+ 		&|\ '\{'\ initializer\_list\ '\}'\\
+ 		&|\ '\{'\ initializer\_list\ ','\ '\}'\\
+initializer_list\ ::=&\\
+		&initializer\\
+		&|\ initializer\_list\ ','\ initializer\\
 \end{align}
 $$
 
@@ -102,9 +112,9 @@ $$
 
 **功能描述**：1.允许对数组和变量执行初始化。var类型的初始化为表达式（表达式中可以出现var类型，包括数组元素等）。数组的初始化					规则则与C语言类似，每个用于初始化的单元都可以是表达式（表达式中可以出现var类型，包括数组元素等）。
 
-​					2.允许数组首个维度缺省，编译器自动填入。另外，初始化的效果一样以C为标准。根据测试，在个人选用的测试样例中，以					及助教对去年期末考试试卷的讲解中使用的数组初始化样例中，测试结果与C语言的执行结果都一致。
-
-​					3.允许声明和初始化出现在复合语句中。
+					2.允许数组首个维度缺省，编译器自动填入。另外，初始化的效果一样以C为标准。根据测试，在个人选用的测试样例中，以					及助教对去年期末考试试卷的讲解中使用的数组初始化样例中，测试结果与C语言的执行结果都一致。
+	
+					3.允许声明和初始化出现在复合语句中。
 
 **分析**：1.var类型简单变量的初始化：修改`vardeclaration`，类似于const类型的初始化，识别标识符后的等号，接着识别表达式，错误恢复也一样根据const初始化设置。
 
