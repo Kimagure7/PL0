@@ -147,19 +147,25 @@ char* err_msg[] =
 /* 36 */	"The subscript of a dimension exopected.",
 /* 37 */	"Missing ']'.",
 /* 38 */	"Not a allowed data type for now.",
-/* 39 */	".",
-
+/* 39 */	"Declaration CANNOT be done with virables.",
+/* 40 */	"Array initialization failed.",
+/* 41 */	"Expression expected.",
+/* 42 */	"Missing '}'.",
+/* 43 */	"',' expected.",
+/* 44 */	"CANNOT convert '<brace-enclosed initializer list>' to 'var' in initialization.",
+/* 45 */	"Too many initializers.",
+/* 46 */    "CANNOT decalare a procedure in statement.",
+/* 47 */	"',' or '}' expected.",
 //mahiru 2022-12-25
-/* 40 */	"Missing '(' after setjmp",
-/* 41 */	"Missing ')' after setjmp",
-/* 42 */	"Missing '(' after longjmp",
-/* 43 */	"Missing ',' after longjmp",
-/* 44 */ 	"Missing ')' after longjmp",
-
+/* 48 */	"Missing '(' after setjmp",
+/* 49 */	"Missing ')' after setjmp",
+/* 50 */	"Missing '(' after longjmp",
+/* 51 */	"Missing ',' after longjmp",
+/* 52 */ 	"Missing ')' after longjmp",
 // jk 2022-12-27
-/* 45 */    "Missing (",
-/* 46 */    "Missing var in for statement",
-/* 47 */    "Missing : in for statement"
+/* 53 */    "Missing (",
+/* 54 */    "Missing var in for statement",
+/* 55 */    "Missing : in for statement"
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -240,7 +246,6 @@ typedef struct
 	char name[MAXIDLEN + 1];
 	int  kind;
 	int  value;
-	int null;//为了保持不同数据类型表项空间的一致，null属性没有任何意义，下面的数组也是一样的考虑
 } comtab;
 
 //符号表
@@ -254,7 +259,6 @@ typedef struct
 	int   kind;
 	short level;
 	short address;
-	int value;
 } mask;
 
 //setjump&longjump添加
@@ -291,7 +295,6 @@ ARRAY_TABLE last_ex_amk;//用来记录最后一个读取到的数组的附加属
 typedef struct ARRAY_MASK{
 	char name[MAXIDLEN+1];
 	int kind;
-	int null;
 	short level;
 	short AT_address;//附加属性在附加属性表中的下标，命名意义为：ARRAY_TABLE_ADDRESS，简称AT_address
 }ARRAY_MASK;
@@ -300,7 +303,13 @@ int atx=0;//附加属性表下标，命名意义为：ARRAY_TABLE_INDEX，简称
 int dim;///当前正在分析的维度
 int flag_dim_0=0;//标志首个维度的方括号之间的表达式是否为空
 #define DIM_BACKFILL MAXADDRESS+1
-int var_init=0;//标志上一个读取的变量是否进行了初始化
-int array_decl=0;//帮助表达式判断当前是否正在处理数组的声明，若是，则不生成代码
+int gen_OK=0;//判断当前是否需要生成代码
 int single_step=0;//单步调试模式
+int pos=0;//数组初始化时存放数值的偏移量
+int vol=0;//当前维度的容量，比如a[2][2][2]由高到低的三个维度容量分别为4，2，1
+int init_num=0;//最高维度的数目，用于回填
+int init=0;//用于帮助gen区分生成的代码存到何处
+int cx_init;//记载初始化操作的代码存储器下标
+instruction code_init[CXMAX];//记载初始化操作的代码存储器
+int statement_init=0;
 // EOF PL0.h
