@@ -21,8 +21,8 @@ body\ ::=&\\
         &|\ 'var'\ \{\ identifier\ \{\ '['\ expression\ ']'\ \}\ ','\ \}\ <\ identifier\ \{\ '['\ expression\ ']'\ \}\\
         &|\ 'var'\ \{\ identifier\ \{\ '['\ expression\ ']'\ \}\ ','\ \}\ <\ identifier\ \{\ '['\ expression\ ']'\ \}\ '='\ initializer\ ';'> \\ 
         &|\ procedure\ identifier\ ';'\ body\ ';'\\
-        &|\ multi_statement\\
-multi_statement ::=&\\
+        &|\ multi\_statement\\
+multi\_statement ::=&\\
        &\{stmt\ ';'\}\\
 statement\ ::=&\\
 		&'const' \ \{\ identifier\ '='\ expression\ ','\ \}\ <\ identifier\ '='\ expression\ ';'\ >\\
@@ -30,7 +30,7 @@ statement\ ::=&\\
         &|\ 'var'\ \{\ identifier\ \{\ '['\ expression\ ']'\ \}\ ','\ \}\ <\ identifier\ \{\ '['\ expression\ ']'\ \}\ '='\ initializer\ ';'>\\ 
         &|\ identifier\ \{\ '['\ expression\ ']'\ \}\ ':='\ expression\ ';'\\
         &|\ 'call'\ identifier\ ';'\\
-        &|\ 'begin'\ multi_statement\ 'end'\ ';'\\
+        &|\ 'begin'\ multi\_statement\ 'end'\ ';'\\
         &|\ 'if'\ <\ condition\ >\ then\ statement\ 'else'\ statement\ ';'\\
         &|\ 'if'\ <\ condition\ >\ then\ statement\ ';'\\
         &|\ 'while'\ <\ condition\ >\ 'do'\ statement\ ';'\\
