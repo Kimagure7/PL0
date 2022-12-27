@@ -19,14 +19,14 @@ $$
 program ::=&\\
 			&body.\\
 body ::=&\\
-      	&'const' \quad {identifier '=' number,}<identifier '=' number ';'>\\
-        &|'var'\quad{identifier {'['number']'},}<identifier{'['number']'}';'>/tobedone \\ 
+      	&'const' \quad {identifier '=' expression,}<identifier '=' expression ';'>\\
+        &|'var'\quad{identifier {'['expression']'},}<identifier{'['expression']'}';'> \\ 
         &|procedure\quad identifier ';' body ';'\\
         &| stmt_{mul}\\
 stmt_{mul} ::=&\\
        &{stmt ';'}\\
 stmt ::=&\\
-        &identifier{'['number']'} ':=' expression\\
+        &identifier{'['expression']'} ':=' expression\\
         &| 'call' identifier\\
         &| 'begin' stmt_{mul} 'end'\\
         &| 'if' <condition> then \quad stmt \quad 'else'\quad  stmt\\
