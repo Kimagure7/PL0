@@ -19,26 +19,26 @@ $$
 $$
 \begin{aligned}
 program\ ::=&\\
-			&body.\\
+			&body\ '.'\\
 body\ ::=&\\
       	&'const' \ \{\ identifier\ '='\ expression\ ','\}\ <\ identifier\ '='\ expression\ ';'\ >\\
         &|\ 'var'\ \{\ identifier\ \{\ '['\ expression\ ']'\ \}\ ','\ \}\ <\ identifier\ \{\ '['\ expression\ ']'\ \}\\
-        &|\ 'var'\ \{\ identifier\ \{\ '['\ expression\ ']'\ \}\ ','\ \}\ <\ identifier\ \{\ '['\ expression\ ']'\ \}\ '='\ initializer\ ';'> \\ 
+        &|\ 'var'\ \{\ identifier\ \{\ '['\ expression\ ']'\ \}\ ','\ \}\ <\ identifier\ \{\ '['\ expression\ ']'\ \}\ \\&'='\ initializer\ ';'> \\ 
         &|\ procedure\ identifier\ ';'\ body\ ';'\\
         &|\ multi\_statement\\
 multi\_statement ::=&\\
-       &\{stmt\ ';'\}\\
+       &\{statement\ ';'\}\\
 statement\ ::=&\\
 		&'const' \ \{\ identifier\ '='\ expression\ ','\ \}\ <\ identifier\ '='\ expression\ ';'\ >\\
         &|\ 'var'\ \{\ identifier\ \{\ '['\ expression\ ']'\ \}\ ','\ \}\ <\ identifier\ \{\ '['\ expression\ ']'\ \}\\
-        &|\ 'var'\ \{\ identifier\ \{\ '['\ expression\ ']'\ \}\ ','\ \}\ <\ identifier\ \{\ '['\ expression\ ']'\ \}\ '='\ initializer\ ';'>\\ 
+        &|\ 'var'\ \{\ identifier\ \{\ '['\ expression\ ']'\ \}\ ','\ \}\ <\ identifier\ \{\ '['\ expression\ ']'\ \}\ \\&'='\ initializer\ ';'>\\ 
         &|\ identifier\ \{\ '['\ expression\ ']'\ \}\ ':='\ expression\ ';'\\
         &|\ 'call'\ identifier\ ';'\\
         &|\ 'begin'\ multi\_statement\ 'end'\ ';'\\
         &|\ 'if'\ <\ condition\ >\ then\ statement\ 'else'\ statement\ ';'\\
         &|\ 'if'\ <\ condition\ >\ then\ statement\ ';'\\
         &|\ 'while'\ <\ condition\ >\ 'do'\ statement\ ';'\\
-		&|\ 'for'\ '('\ 'var'\ identifier\ ':'\ '('\ expression\ ','\ expression\ \left(','\ expression\ ')' \,\,\, | \,\,\, ')'\right)\ ')' \ statement\ ';'\\
+		&|\ 'for'\ '('\ 'var'\ identifier\ ':'\ '('\ expression\ ','\ expression\ \left(','\ expression\ ')' \,\,\, | \,\,\, ')'\right)\ ')'\\& \ statement\ ';'\\
 		&|\ 'setjmp'\ '('\ expression\ ')'\ ';'\\
 		&|\ 'longjmp'\ '('\ expression\ ','\ expression\ ')'\ ';'\\
 condition\ ::=&\\
@@ -56,7 +56,7 @@ factor\ ::=&\\
         &|\ '('\ expression\ ')'\\
         &|\ 'setjmp'\ '('\ expression\ ')'\\ 
         &|\ 'random'\ '('\ expression\ ')'\\
- initializer\ ::=&\\
+initializer\ ::=&\\
  		&expression\\
  		&|\ '\{'\ initializer\_list\ '\}'\\
  		&|\ '\{'\ initializer\_list\ ','\ '\}'\\
@@ -115,11 +115,12 @@ $$
 
 2017年pl0文档中的第13项。
 
-**功能描述**：1.允许对数组和变量执行初始化。var类型的初始化为表达式（表达式中可以出现var类型，包括数组元素等）。数组的初始化					规则则与C语言类似，每个用于初始化的单元都可以是表达式（表达式中可以出现var类型，包括数组元素等）。
+**功能描述**：
+1. 允许对数组和变量执行初始化。var类型的初始化为表达式（表达式中可以出现var类型，包括数组元素等）。数组的初始化规则则与C语言类似，每个用于初始化的单元都可以是表达式（表达式中可以出现var类型，包括数组元素等）。
 
-					2.允许数组首个维度缺省，编译器自动填入。另外，初始化的效果一样以C为标准。根据测试，在个人选用的测试样例中，以					及助教对去年期末考试试卷的讲解中使用的数组初始化样例中，测试结果与C语言的执行结果都一致。
+2. 允许数组首个维度缺省，编译器自动填入。另外，初始化的效果一样以C为标准。根据测试，在个人选用的测试样例中，以及助教对去年期末考试试卷的讲解中使用的数组初始化样例中，测试结果与C语言的执行结果都一致。
 	
-					3.允许声明和初始化出现在复合语句中。
+3. 允许声明和初始化出现在复合语句中。
 
 **分析**：1.var类型简单变量的初始化：修改`vardeclaration`，类似于const类型的初始化，识别标识符后的等号，接着识别表达式，错误恢复也一样根据const初始化设置。
 
