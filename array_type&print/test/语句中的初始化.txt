@@ -1,6 +1,0 @@
-var a;
-begin
-var c;
-c:=4;
-print(c);
-end.
