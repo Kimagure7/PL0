@@ -19,33 +19,35 @@ $$
 program ::=&\\
 			&body.\\
 body ::=&\\
-      	&“const” { identifier “=”number“,”}<identifier “=” number “;”>\\
-            &|  “var”{identifier[ {“[”number“]”}],}<identifier[{“[”number“]”}]“;”>\\
-       &| “procedure” “;” body “;”\\
-       &| stmt_mul\\
-stmt_mul ::=&\\
-       &{stmt “;”}
+      	&'const' \quad {identifier '=' number,}<identifier '=' number ';'>\\
+        &|'var'\quad{identifier[ {“[”number“]”}],}<identifier[{“[”number“]”}]“;”>/tobedone \\ 
+        &|procedure\quad identifier ';' body ';'\\
+        &| stmt_{mul}\\
+stmt_{mul} ::=&\\
+       &{stmt ';'}\\
 stmt ::=&\\
-        &identifier[{“[”number“]”}] “:=” expression、、
-        &| “call” identifier\\
-        &| “begin” stmt_mul “end”\\
-        &| “if” <condition> then stmt “else” stmt\\
-        &| “while” <condition> “do” stmt\\
-		&|“for”“(“ ((expression“;”)|“;”)[expression] “;”[expression] “;”\\
+        &identifier[{'['number']'}] ':=' expression\\
+        &| 'call' identifier\\
+        &| 'begin' stmt_{mul} 'end'\\
+        &| 'if' <condition> then \quad stmt \quad 'else'\quad  stmt\\
+        &| 'if' <condition> then \quad stmt\\
+        &| 'while' <condition> 'do' stmt\\
+		&|'for''(' ((expression';')|';') \quad [expression] ';'[expression] ';' /tobedone \\
+		&|	'setjmp(' expression ')' \\
+		&|	'longjmp(' expression ',' expression ')' \\
 condition ::=&\\
-           &“odd” expression\\
-            &| expression (“=”| “<>”| “<”| “>”| \\
-             &“<=”| “>=”|“&&”|“||”)expression\\
-            &| “！”expression\\
+           &'odd' \quad expression\\
+           &| expression \quad ('='| '<>'| '<'| '>'|'<='| '>=')\quad expression\\
 expression ::=&\\
-           &term {(“+”| “-“) term}\\
+           &term \quad {('+'| '-') \quad term}\\
 term ::=&\\
-        &factor {(“*”| “/”) term}\\
+        &factor \quad {('*'| '/') \quad term}\\
 factor ::=&\\
-        &identifier[{“[”number“]”}]\\
-        | number\\
-        &| “-”expression\\
-        &| “(”expression“)”\\
+        &identifier[{'['number']'}]\\
+        &| number\\
+        &| '-'expression\\
+        &| '('expression')'\\
+        &|	'setjmp(' expression ')' 
 \end{align}
 $$
 
@@ -160,6 +162,47 @@ A过程无特殊功能，B过程除了检查上面所说的错误以外也无特
 
 **运行**：同样地，参数的处理结果会被置于栈顶。因此与数组元素的引用同理，设置了新的指令PRT来打印出栈顶的内容。当需要打印换行符时，PRT指令的参数设置为特殊值，执行时只会打印换行符。
 
+
+
+### 3. for 语句
+
+for 语句实现的主要部分位于 statement 的分析中，需要添加对 SYM_FOR 分析的分支。
+
+首先是对关键字 for 及其后的左括号、var 关键字的分析，若左括号无法匹配或 var 关键字不存在，则会记录对应的 error。
+
+当分析到新定义的循环变量时，需要完成两件事情：
+
+1. 将循环变量记入符号表，并使用一个变量记录其在符号表中的位置，以便后续生成代码使用
+2. 生成一条 INT 指令，将栈顶指针往上移动一个位置，表示在栈顶为循环变量分配其空间
+
+之后完成对循环变量后面的冒号与左括号的分析。
+
+下一步，对循环初值进行分析，分两步：
+
+1. 调用 expression() 对循环初值进行分析，其用于错误恢复的符号集合为 $\text{fsys} \, \cup \, \{\text{,}\}$
+2. 生成为循环变量赋初值的 STO 指令
+
+在对循环条件进行分析之前，首先记录此时生成代码的标号 cx1，以便后续对 for 循环进行跳转指令生成时填入跳转的位置
+
+下一步，对循环条件进行分析，分四步：
+
+1. 生成 LOD 指令，表示将循环变量的值放到栈顶部
+2. 调用 expression() 对循环边界进行分析，其用于错误恢复的符号集合为 $\text{fsys} \, \cup \, \{\text{,, )}\}$
+3. 根据 low 和 up 的大小关系，生成 OPR_LES 或 OPR_GTR 指令
+4. 生成 JPC 指令，表示循环条件不满足时跳出循环体，其跳转位置在最后回填
+
+下一步，对循环步长 step 进行分析，若该位置缺省，则认为 step 为 1，否则 step 为给出的值
+
+在对 for 的三要素分析完成后，调用 statement() 对循环主体代码进行分析
+
+在循环主体分析完毕后，生成对循环变量进行更新的指令
+
+下一步，生成 JMP 指令跳回 cx1，并回填在对循环条件进行分析生成的 JPC 指令的跳转地址（为此时的 cx）
+
+最后，生成指令撤销对循环变量的空间，并删除符号表中循环变量的表项，for 语句的分析到此结束
+
+## 
+
 ### 4. if then else 实现：
 
 尝试多次后，我们发现无法在现有框架和LL(1)的要求下完成对else的分析，因此，我们使用了一点特殊的方法以保持现有框架不变，在适当违背LL(1)思想的同时完成对if then else的处理
@@ -185,3 +228,25 @@ A过程无特殊功能，B过程除了检查上面所说的错误以外也无特
 当左值是变量时，只需读取下一个symbol然后调用expression()分析，最后将栈顶的值，即此赋值表达式的右值通过STO指令传入该左值；
 
 当左值是数组时，只需读取下一个symbol然后调用expression()分析，然后由于此时次栈顶内为左值数组元素的数据栈偏移，因此利用间接存指令STOA，将此时位于栈顶的表达式右值存入该数组元素中；之后由于STOA会弹出栈顶和次栈顶，为了恢复原栈顶，使用INT指令申请一个空间即可。
+
+
+
+### 6. SETJMP&LONGJMP
+
+恢复程序需要恢复三个变量，栈顶指针，栈基指针，pc
+
+调用setjmp时保存这三个变量，同时将0放至栈顶
+
+调用longjmp时从jmp_buf中读取并恢复这三个变量，同时将函数调用的参数value放至栈顶
+
+
+
+### ex. random 函数
+
+本实验对 random 函数的实现主要集中在对 factor 的分析中，支持如 `i := random(100);`、`print(random());` 等的使用形式
+
+首先是对关键字 random 及其后的左括号的分析
+
+然后是对 random() 括号中的值的分析，若缺省，表示生成任意随机自然数，否则其范围由括号中的值指定
+
+考虑到 random() 出现在程序中的位置，添加一条 RDM 指令，其作用是将栈顶的数更换为一个随机数，由此对不含缺省值的 random 只需先用 expression 对值分析再生成一条 RDM 指令，对缺省 random 的分析则需先生成一条 LIT 指令将任意一个数放到栈顶再生成一条 RDM 指令
