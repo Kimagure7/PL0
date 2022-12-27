@@ -20,13 +20,13 @@ program ::=&\\
 			&body.\\
 body ::=&\\
       	&'const' \quad {identifier '=' number,}<identifier '=' number ';'>\\
-        &|'var'\quad{identifier[ {“[”number“]”}],}<identifier[{“[”number“]”}]“;”>/tobedone \\ 
+        &|'var'\quad{identifier {'['number']'},}<identifier{'['number']'}';'>/tobedone \\ 
         &|procedure\quad identifier ';' body ';'\\
         &| stmt_{mul}\\
 stmt_{mul} ::=&\\
        &{stmt ';'}\\
 stmt ::=&\\
-        &identifier[{'['number']'}] ':=' expression\\
+        &identifier{'['number']'} ':=' expression\\
         &| 'call' identifier\\
         &| 'begin' stmt_{mul} 'end'\\
         &| 'if' <condition> then \quad stmt \quad 'else'\quad  stmt\\
