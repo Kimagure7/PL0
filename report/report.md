@@ -43,7 +43,7 @@ expression ::=&\\
 term ::=&\\
         &factor \quad {('*'| '/') \quad term}\\
 factor ::=&\\
-        &identifier[{'['number']'}]\\
+        &identifier{'['number']'}{'=' expresion}\\
         &| number\\
         &| '-'expression\\
         &| '('expression')'\\
