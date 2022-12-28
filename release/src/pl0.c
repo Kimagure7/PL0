@@ -180,26 +180,26 @@ void getsym(void)
 //  生成一条指令（汇编），把三个参数 f、l、a 组装成一条目标指令并存放于 code 数组中，增加 CX 的值，CX 表示下一条即将生成的目标指令的地址。
 void gen(int x, int y, int z)
 {
-	if (cx > CXMAX) // 代码超出长度限制
-	{
-		printf("Fatal Error: Program too long.\n");
-		exit(1);
-	}
-	if (gen_OK)
-		return;
-	if (!init || statement_init)
-	{
-		code[cx].f = x;	  // 操作码，如LIT,LOD,STO等
-		code[cx].l = y;	  // 操作数的层次差（声明点和引用点之间的静态层次差）
-		code[cx++].a = z; // 操作数的偏移地址
-	}
-	else
-	{
-		code_init[cx_init].f = x;
-		code_init[cx_init].l = y;
-		code_init[cx_init++].a = z;
-	}
-	// 上述赋值完成时，cx自增，以指向下一个位置
+    if (cx > CXMAX) // 代码超出长度限制
+    {
+        printf("Fatal Error: Program too long.\n");
+        exit(1);
+    }
+    if (gen_OK)
+        return;
+    if (!init || statement_init)
+    {
+        code[cx].f = x;   // 操作码，如LIT,LOD,STO等
+        code[cx].l = y;   // 操作数的层次差（声明点和引用点之间的静态层次差）
+        code[cx++].a = z; // 操作数的偏移地址
+    }
+    else
+    {
+        code_init[cx_init].f = x;
+        code_init[cx_init].l = y;
+        code_init[cx_init++].a = z;
+    }
+    // 上述赋值完成时，cx自增，以指向下一个位置
 } // gen
 
 //////////////////////////////////////////////////////////////////////
@@ -211,19 +211,19 @@ void gen(int x, int y, int z)
 //  （3） 整数 n，表示有关错误的诊断号；
 void test(symset s1, symset s2, int n)
 {
-	symset s;
-	if (!inset(sym, s1)) // 如果当前的符号不在同步符号集中，报错，并开始应用镇定规则
-	{
-		if (!gen_OK)
-		{
-			error(n);
-		}
-		s = uniteset(s1, s2);  // 向同步符号集合中加入新的停止符号，并将合并后的集合存入临时集合s中
-		while (!inset(sym, s)) // 如果当前符号不在扩展后的集合中，暂时跳过，继续读取后面的符号（保持镇定）
-			getsym();
-		// 注意，s2中的符号是镇定规则中所说的“不该被盲目忽略的符号”
-		destroyset(s); // 销毁临时空间
-	}
+    symset s;
+    if (!inset(sym, s1)) // 如果当前的符号不在同步符号集中，报错，并开始应用镇定规则
+    {
+        if (!gen_OK)
+        {
+            error(n);
+        }
+        s = uniteset(s1, s2);  // 向同步符号集合中加入新的停止符号，并将合并后的集合存入临时集合s中
+        while (!inset(sym, s)) // 如果当前符号不在扩展后的集合中，暂时跳过，继续读取后面的符号（保持镇定）
+            getsym();
+        // 注意，s2中的符号是镇定规则中所说的“不该被盲目忽略的符号”
+        destroyset(s); // 销毁临时空间
+    }
 } // test
 
 //////////////////////////////////////////////////////////////////////
@@ -237,51 +237,51 @@ int dx; // 过程的数据单元下标，用于分配变量，顺序分配，从
 // 如果标识符被说明为过程，其属性就是过程的入口地址及层次。
 void enter(int kind)
 {
-	mask *mk; // 新表项
-	// tx是符号表中最后一个非空表项的下表，自增之后即指向首个空闲的位置
-	// HB_2022-12-18
-	ARRAY_MASK *amk;			// 数组附加属性表新表项
-	tx++;						// 表项编号（下标）
-	strcpy(table[tx].name, id); // 名字插入表中
-	table[tx].kind = kind;		// 标记种类
-	switch (kind)				// 分类填入属性
-	{
-	case ID_CONSTANT: // 常量，属性值为常数值
-		if (num > MAXADDRESS)
-		{
-			error(25); // The number is too great.
-			num = 0;
-		} // 常数值超出大小限制
-		table[tx].value = num;
-		break;
-	case ID_VARIABLE:			 // 变量，属性是由层次和偏移组成的地址
-		mk = (mask *)&table[tx]; // 为变量分配空间
-		mk->level = level;		 // 写入层次
-		mk->address = dx++;		 // 数据空间下标加一
-		break;
-	case ID_PROCEDURE:			 // 过程
-		mk = (mask *)&table[tx]; // 为过程分配空间
-		mk->level = level;		 // 写入层次
-		// 这里为什么不填入地址呢？
-		// 这是因为程序的地址将在block函数中填入符号表
-		break;
-	case ID_ARRAY:
-		// HB_2022-12-17
-		// 注意：数组名本身只是一个“标签”，本身是不占用空间的
-		amk = (ARRAY_MASK *)&table[tx]; // 为数组名分配空间
-		amk->level = level;				// 写入层次
-		amk->AT_address = atx;			// 写入附加属性表地址
-		// 下面根据last_ex_amk来填写附加属性表
-		arytb[atx].dim = last_ex_amk.dim;
-		for (int i = last_ex_amk.dim; i >= 0; i--)
-		{
-			arytb[atx].dim_size[i] = last_ex_amk.dim_size[i];
-		}
-		arytb[atx].head_address = dx;
-		dx += last_ex_amk.size; // 为数组元素腾出空间
-		arytb[atx].size = last_ex_amk.size;
-		atx++;
-	} // switch
+    mask *mk; // 新表项
+    // tx是符号表中最后一个非空表项的下表，自增之后即指向首个空闲的位置
+    // HB_2022-12-18
+    ARRAY_MASK *amk;            // 数组附加属性表新表项
+    tx++;                       // 表项编号（下标）
+    strcpy(table[tx].name, id); // 名字插入表中
+    table[tx].kind = kind;      // 标记种类
+    switch (kind)               // 分类填入属性
+    {
+    case ID_CONSTANT: // 常量，属性值为常数值
+        if (num > MAXADDRESS)
+        {
+            error(25); // The number is too great.
+            num = 0;
+        } // 常数值超出大小限制
+        table[tx].value = num;
+        break;
+    case ID_VARIABLE:            // 变量，属性是由层次和偏移组成的地址
+        mk = (mask *)&table[tx]; // 为变量分配空间
+        mk->level = level;       // 写入层次
+        mk->address = dx++;      // 数据空间下标加一
+        break;
+    case ID_PROCEDURE:           // 过程
+        mk = (mask *)&table[tx]; // 为过程分配空间
+        mk->level = level;       // 写入层次
+        // 这里为什么不填入地址呢？
+        // 这是因为程序的地址将在block函数中填入符号表
+        break;
+    case ID_ARRAY:
+        // HB_2022-12-17
+        // 注意：数组名本身只是一个“标签”，本身是不占用空间的
+        amk = (ARRAY_MASK *)&table[tx]; // 为数组名分配空间
+        amk->level = level;             // 写入层次
+        amk->AT_address = atx;          // 写入附加属性表地址
+        // 下面根据last_ex_amk来填写附加属性表
+        arytb[atx].dim = last_ex_amk.dim;
+        for (int i = last_ex_amk.dim; i >= 0; i--)
+        {
+            arytb[atx].dim_size[i] = last_ex_amk.dim_size[i];
+        }
+        arytb[atx].head_address = dx;
+        dx += last_ex_amk.size; // 为数组元素腾出空间
+        arytb[atx].size = last_ex_amk.size;
+        atx++;
+    } // switch
 } // enter
 
 //////////////////////////////////////////////////////////////////////
@@ -303,78 +303,78 @@ int position(char *id)
 // 声明时处理数组的维度
 void dimension(void)
 {
-	gen_OK = 1;					 // 告诉表达式现在开始处理的是数组声明
-	int expression(symset fsys); // 内部声明expression，使得后面能够正确调用
-	dim = 0;					 // 重置当前处理的维度
-	int cur_dim_size;			 // 当前维度的大小
-	symset set;
-	set = createset(SYM_RSQBRAC, SYM_NULL); // 生成一个包含右方括号的符号集，因为右括号不应当被跳过
-	last_ex_amk.dim = 0;					// 记录附加属性
-	last_ex_amk.size = 0;
-	int flag = 0;	// 标志某个维度方括号之间的表达式是否为空
-	flag_dim_0 = 0; // 标志首个维度的方括号之间的表达式是否为空
-	while (sym == SYM_LSQBRAC)
-	{ // 当数组的维度和初始化数据没有处理完毕时
-		getsym();
-		cur_dim_size = expression(set);		 // 获取方括号之间的表达式的数值
-		flag = cur_dim_size == DIM_BACKFILL; // 测试是否为空
-		if (flag && dim)
-		{			   // 如果当前维度为空且并非第一个维度，报错
-			error(33); //"The size of a dimension expected."
-		}
-		else if (flag && !dim)
-		{
-			flag_dim_0 = 1;
-			last_ex_amk.size = 1;		 // 大小暂时设置为1，等待回填
-			last_ex_amk.dim_size[0] = 1; // 大小暂时设置为1，等待回填
-		}
-		else
-		{ // flag=0，此时维度的大小正常被声明
-			last_ex_amk.dim_size[dim] = cur_dim_size;
-			if (dim)
-			{
-				last_ex_amk.size *= cur_dim_size;
-			}
-			else
-			{
-				last_ex_amk.size = cur_dim_size;
-			}
-		}
-		if (sym == SYM_RSQBRAC) // 如果读取到了右方括号括号（正确完成配对）
-		{
-			dim++;
-			getsym(); // 继续读取下一个符号
-		}
-		else // 没有读取到右括号，报错
-		{
-			error(37); // Missing ']'.
-		}
-	}
-	last_ex_amk.dim = --dim; // 记录维度的个数
-	gen_OK = 0;				 // 数组声明处理结束
-	destroyset(set);		 // 调用完成，销毁临时的符号集
-	return;
+    gen_OK = 1;                  // 告诉表达式现在开始处理的是数组声明
+    int expression(symset fsys); // 内部声明expression，使得后面能够正确调用
+    dim = 0;                     // 重置当前处理的维度
+    int cur_dim_size;            // 当前维度的大小
+    symset set;
+    set = createset(SYM_RSQBRAC, SYM_NULL); // 生成一个包含右方括号的符号集，因为右括号不应当被跳过
+    last_ex_amk.dim = 0;                    // 记录附加属性
+    last_ex_amk.size = 0;
+    int flag = 0;   // 标志某个维度方括号之间的表达式是否为空
+    flag_dim_0 = 0; // 标志首个维度的方括号之间的表达式是否为空
+    while (sym == SYM_LSQBRAC)
+    { // 当数组的维度和初始化数据没有处理完毕时
+        getsym();
+        cur_dim_size = expression(set);      // 获取方括号之间的表达式的数值
+        flag = cur_dim_size == DIM_BACKFILL; // 测试是否为空
+        if (flag && dim)
+        {              // 如果当前维度为空且并非第一个维度，报错
+            error(33); //"The size of a dimension expected."
+        }
+        else if (flag && !dim)
+        {
+            flag_dim_0 = 1;
+            last_ex_amk.size = 1;        // 大小暂时设置为1，等待回填
+            last_ex_amk.dim_size[0] = 1; // 大小暂时设置为1，等待回填
+        }
+        else
+        { // flag=0，此时维度的大小正常被声明
+            last_ex_amk.dim_size[dim] = cur_dim_size;
+            if (dim)
+            {
+                last_ex_amk.size *= cur_dim_size;
+            }
+            else
+            {
+                last_ex_amk.size = cur_dim_size;
+            }
+        }
+        if (sym == SYM_RSQBRAC) // 如果读取到了右方括号括号（正确完成配对）
+        {
+            dim++;
+            getsym(); // 继续读取下一个符号
+        }
+        else // 没有读取到右括号，报错
+        {
+            error(37); // Missing ']'.
+        }
+    }
+    last_ex_amk.dim = --dim; // 记录维度的个数
+    gen_OK = 0;              // 数组声明处理结束
+    destroyset(set);         // 调用完成，销毁临时的符号集
+    return;
 }
 
 // 常量声明
 void constdeclaration()
 {
-	int expression(symset fsys);
-	if (sym == SYM_IDENTIFIER) // 识别到左值为标识符
-	{
-		getsym();								  // 获取下一个符号，从而做进一步的判断
-		if (sym == SYM_EQU || sym == SYM_BECOMES) // 下一个符号是条件判断等于或赋值等于
-		{
-			if (sym == SYM_BECOMES) // 赋值的等号
-				// 注意，声明中赋值使用的等号与条件判断中的等号是相同的，似乎不存在条件判断表达式
-				error(1); // Found ':=' when expecting '='.
-			getsym();	  // 读取下一个符号
-			gen_OK = 1;	  // 只是为了在编译时获取表达式的数值，故不能生成代码
-			symset set = createset(SYM_COMMA, SYM_SEMICOLON, SYM_NULL);
-			num = expression(set);
-			gen_OK = 0;
-			enter(ID_CONSTANT); // 将标识符标注为常量类型并加入符号表
-		}
+    int expression(symset fsys);
+    if (sym == SYM_IDENTIFIER) // 识别到左值为标识符
+    {
+        getsym();                                 // 获取下一个符号，从而做进一步的判断
+        if (sym == SYM_EQU || sym == SYM_BECOMES) // 下一个符号是条件判断等于或赋值等于
+        {
+            if (sym == SYM_BECOMES) // 赋值的等号
+                // 注意，声明中赋值使用的等号与条件判断中的等号是相同的，似乎不存在条件判断表达式
+                error(1); // Found ':=' when expecting '='.
+            getsym();     // 读取下一个符号
+            gen_OK = 1;   // 只是为了在编译时获取表达式的数值，故不能生成代码
+            symset set = createset(SYM_COMMA, SYM_SEMICOLON, SYM_NULL);
+            num = expression(set);
+            gen_OK = 0;
+            enter(ID_CONSTANT); // 将标识符标注为常量类型并加入符号表
+        }
         // HB_2022-12-18
         else if (sym == SYM_LSQBRAC)
         {              // 数组必须是var类型
@@ -393,219 +393,219 @@ void constdeclaration()
 // 数组初始化，函数按照产生式进行编写
 void initializer(ARRAY_TABLE amk, int *count)
 {
-	ARRAY_TABLE amk_temp;
-	int unit_size; // 每一片“连续存储地址”的大小，其实就是下一层的“容量”
-	int enbrace_init_flag = 0;
-	int *cnt = (int *)malloc(sizeof(int));
-	*cnt = 0;
-	void initializer_list(ARRAY_TABLE amk, int flag, int *count);
-	void assignment_expression(ARRAY_TABLE amk);
-	if (!(*count))
-	{
-		*count = 1;
-	}
-	else
-	{
-		*count = *count + 1;
-	}
-	if (*count > amk.size && ((dim > 0) || !flag_dim_0))
-	{			   // 不需要回填时，size是固定的
-		error(45); //"Too many initializers."
-	}
-	if (inset(sym, facbegsys))
-	{
-		assignment_expression(amk);
-		if (sym != SYM_COMMA && sym != SYM_RBRAC)
-		{
-			error(47); //"',' or '}' expected."
-		}
-	}
-	else if (sym == SYM_LBRAC)
-	{
-		dim++;
-		amk_temp.dim = amk.dim - 1;
-		amk_temp.size = 1;
-		for (int i = amk_temp.dim; i >= 0; i--)
-		{
-			amk_temp.dim_size[i] = amk.dim_size[i + 1];
-			amk_temp.size *= amk_temp.dim_size[i];
-		}
-		if ((pos - amk.head_address) % amk_temp.size)
-		{
-			enbrace_init_flag = 1; // 标志是否是连续空间的第一个数据，若是则占据整个空间
-		}
-		int temp_flag = 0;
-		int temp_mul = amk_temp.size;
-		for (int i = 0; i < amk_temp.dim; i++)
-		{
-			temp_mul /= amk_temp.dim_size[i];
-			if (!((pos - amk.head_address) % temp_mul) && temp_mul != 1)
-			{
-				temp_flag = 1;
-			}
-		}
-		amk_temp.head_address = pos;
-		getsym();
-		initializer_list(amk_temp, enbrace_init_flag && !temp_flag, cnt);
-		unit_size = amk_temp.size / amk_temp.dim_size[0];
-		dim--;
-		while ((pos - amk.head_address) % amk_temp.size && (!enbrace_init_flag || temp_flag))
-		{ // 计算是否有缺省时，以上一层的头地址作为基准
-			// 缺省部分全部填入0
-			*cnt = *cnt + 1;
-			gen(LIT, 0, 0);
-			gen(STO, 0, pos);
-			pos++;
-		}
-		temp_flag = 0;
-		if (flag_dim_0)
-		{
-			init_num = (pos - amk_temp.head_address) / unit_size; // 当需要回填时，将本层初始化数目填入，init_num最后一次被修改对应的一定是最后一层
-		}
-		free(cnt);
-		if (sym == SYM_COMMA)
-		{
-			getsym();
-		}
-		if (sym == SYM_RBRAC)
-		{
+    ARRAY_TABLE amk_temp;
+    int unit_size; // 每一片“连续存储地址”的大小，其实就是下一层的“容量”
+    int enbrace_init_flag = 0;
+    int *cnt = (int *)malloc(sizeof(int));
+    *cnt = 0;
+    void initializer_list(ARRAY_TABLE amk, int flag, int *count);
+    void assignment_expression(ARRAY_TABLE amk);
+    if (!(*count))
+    {
+        *count = 1;
+    }
+    else
+    {
+        *count = *count + 1;
+    }
+    if (*count > amk.size && ((dim > 0) || !flag_dim_0))
+    {              // 不需要回填时，size是固定的
+        error(45); //"Too many initializers."
+    }
+    if (inset(sym, facbegsys))
+    {
+        assignment_expression(amk);
+        if (sym != SYM_COMMA && sym != SYM_RBRAC)
+        {
+            error(47); //"',' or '}' expected."
+        }
+    }
+    else if (sym == SYM_LBRAC)
+    {
+        dim++;
+        amk_temp.dim = amk.dim - 1;
+        amk_temp.size = 1;
+        for (int i = amk_temp.dim; i >= 0; i--)
+        {
+            amk_temp.dim_size[i] = amk.dim_size[i + 1];
+            amk_temp.size *= amk_temp.dim_size[i];
+        }
+        if ((pos - amk.head_address) % amk_temp.size)
+        {
+            enbrace_init_flag = 1; // 标志是否是连续空间的第一个数据，若是则占据整个空间
+        }
+        int temp_flag = 0;
+        int temp_mul = amk_temp.size;
+        for (int i = 0; i < amk_temp.dim; i++)
+        {
+            temp_mul /= amk_temp.dim_size[i];
+            if (!((pos - amk.head_address) % temp_mul) && temp_mul != 1)
+            {
+                temp_flag = 1;
+            }
+        }
+        amk_temp.head_address = pos;
+        getsym();
+        initializer_list(amk_temp, enbrace_init_flag && !temp_flag, cnt);
+        unit_size = amk_temp.size / amk_temp.dim_size[0];
+        dim--;
+        while ((pos - amk.head_address) % amk_temp.size && (!enbrace_init_flag || temp_flag))
+        { // 计算是否有缺省时，以上一层的头地址作为基准
+            // 缺省部分全部填入0
+            *cnt = *cnt + 1;
+            gen(LIT, 0, 0);
+            gen(STO, 0, pos);
+            pos++;
+        }
+        temp_flag = 0;
+        if (flag_dim_0)
+        {
+            init_num = (pos - amk_temp.head_address) / unit_size; // 当需要回填时，将本层初始化数目填入，init_num最后一次被修改对应的一定是最后一层
+        }
+        free(cnt);
+        if (sym == SYM_COMMA)
+        {
+            getsym();
+        }
+        if (sym == SYM_RBRAC)
+        {
 
-			getsym();
-		}
-		else
-		{
-			error(42); //"Missing '}'."
-		}
-	}
-	else
-	{
-		error(41); //"Expression expected."
-	}
-	return;
+            getsym();
+        }
+        else
+        {
+            error(42); //"Missing '}'."
+        }
+    }
+    else
+    {
+        error(41); //"Expression expected."
+    }
+    return;
 }
 
 void initializer_list(ARRAY_TABLE amk, int flag, int *count)
 {
-	void initializer_list_p(ARRAY_TABLE amk, int flag, int *count);
-	initializer(amk, count);
-	initializer_list_p(amk, flag, count);
-	return;
+    void initializer_list_p(ARRAY_TABLE amk, int flag, int *count);
+    initializer(amk, count);
+    initializer_list_p(amk, flag, count);
+    return;
 }
 // 下面意为initializer_list'，是用于消除直接左递归而增加的新非终结符
 void initializer_list_p(ARRAY_TABLE amk, int flag, int *count)
 {
-	if (sym == SYM_COMMA)
-	{
-		if (flag)
-		{
-			error(44); //"CANNOT convert '<brace-enclosed initializer list>' to 'var' in initialization"
-		}
-		getsym();
-		initializer(amk, count);
-		initializer_list_p(amk, flag, count);
-		return;
-	}
-	else
-		return;
+    if (sym == SYM_COMMA)
+    {
+        if (flag)
+        {
+            error(44); //"CANNOT convert '<brace-enclosed initializer list>' to 'var' in initialization"
+        }
+        getsym();
+        initializer(amk, count);
+        initializer_list_p(amk, flag, count);
+        return;
+    }
+    else
+        return;
 }
 
 void assignment_expression(ARRAY_TABLE amk)
 {
-	int expression(symset fsys);
-	symset set = createset(SYM_COMMA, SYM_RBRAC, SYM_NULL);
-	expression(set); // 生成计算某个单元的初始值所需的代码
-	// 执行完上面的部分，此时栈顶存有需要放入存储单元的数值
-	gen(STO, 0, pos); // 注意，声明处的层次差一定是0
-	pos++;			  // 下一个初始化位置
-	destroyset(set);
-	return;
+    int expression(symset fsys);
+    symset set = createset(SYM_COMMA, SYM_RBRAC, SYM_NULL);
+    expression(set); // 生成计算某个单元的初始值所需的代码
+    // 执行完上面的部分，此时栈顶存有需要放入存储单元的数值
+    gen(STO, 0, pos); // 注意，声明处的层次差一定是0
+    pos++;            // 下一个初始化位置
+    destroyset(set);
+    return;
 }
 // 变量声明
 void vardeclaration(void)
 {
-	init = 1;
-	int expression(symset fsys);
-	if (sym == SYM_IDENTIFIER) // 识别到左值为标识符
-	{
-		getsym(); // 根据下一个符号是否为方括号判断变量类型是简单变量还是数组变量
-		if (sym == SYM_LSQBRAC)
-		{
-			dimension();							  // 处理维度
-													  // 下一个符号如果不是等号，说明没有对数组进行初始化，那么首个维度不可以等待回填
-			if (sym == SYM_EQU || sym == SYM_BECOMES) // 下一个符号是条件判断等于或赋值等于
-			{
-				if (sym == SYM_BECOMES) // 赋值的等号
-					// 注意，声明中赋值使用的等号与条件判断中的等号是相同的，似乎不存在条件判断表达式
-					error(1);		   // Found ':=' when expecting '='.
-				getsym();			   // 读取下一个符号
-				if (sym == SYM_NUMBER) // 数字
-				{
-					error(35); //"An array must be initialized with a brace-enclosed initializer."
-				}
-				else if (sym == SYM_LBRAC) // 检测到左大括号，开始对数组进行初始化
-				{
-					dim = -1;
-					ARRAY_TABLE amk_temp;
-					amk_temp.dim = last_ex_amk.dim + 1;
-					amk_temp.size = 1;
-					for (int i = amk_temp.dim; i >= 1; i--)
-					{
-						amk_temp.dim_size[i] = last_ex_amk.dim_size[i - 1];
-						amk_temp.size *= amk_temp.dim_size[i];
-					}
-					amk_temp.head_address = dx;
-					pos = dx;
-					int *count = (int *)malloc(sizeof(int));
-					*count = 0;
-					initializer(amk_temp, count);
-					if (flag_dim_0)
-					{
-						last_ex_amk.dim_size[0] = init_num;			 // 回填缺省的首个维度
-						last_ex_amk.size *= last_ex_amk.dim_size[0]; // 回填数组总大小
-					}
-					free(count);
-				}
-				else
-				{			   // 模仿C语言处理的报错
-					error(40); //"Array initialization failed."
-				}
-			}
-			else if (flag_dim_0)
-			{			   // 数组的首个维度在没有初始化时不能为空
-				error(33); //"The size of a dimension expected."
-			}
-			enter(ID_ARRAY); // 将数组填入符号表
-			if (statement_init)
-			{
-				gen(INT, 0, last_ex_amk.size);
-			}
-		}
-		else // 普通变量声明
-		{
-			if (sym == SYM_EQU || sym == SYM_BECOMES) // 下一个符号是条件判断等于或赋值等于
-			{
-				if (sym == SYM_BECOMES) // 赋值的等号
-					// 注意，声明中赋值使用的等号与条件判断中的等号是相同的，似乎不存在条件判断表达式
-					error(1); // Found ':=' when expecting '='.
-				getsym();	  // 读取下一个符号
-				// 变量的值只能通过指令在运行时改变
-				symset set = createset(SYM_COMMA, SYM_SEMICOLON, SYM_NULL);
-				expression(set); // 处理完表达式之后，栈顶应当存有用于初始化变量的数值
-				destroyset(set);
-				gen(STO, 0, dx); // 由于本身就是声明的位置，层次差一定为0
-			}
-			enter(ID_VARIABLE); // 将标识符标注为变量类型并加入符号表
-			if (statement_init)
-			{
-				gen(INT, 0, 1);
-			}
-		}
-	}
-	else
-	{
-		error(4); // There must be an identifier to follow 'const', 'var', or 'procedure'.
-	}
-	init = 0;
+    init = 1;
+    int expression(symset fsys);
+    if (sym == SYM_IDENTIFIER) // 识别到左值为标识符
+    {
+        getsym(); // 根据下一个符号是否为方括号判断变量类型是简单变量还是数组变量
+        if (sym == SYM_LSQBRAC)
+        {
+            dimension();                              // 处理维度
+                                                      // 下一个符号如果不是等号，说明没有对数组进行初始化，那么首个维度不可以等待回填
+            if (sym == SYM_EQU || sym == SYM_BECOMES) // 下一个符号是条件判断等于或赋值等于
+            {
+                if (sym == SYM_BECOMES) // 赋值的等号
+                    // 注意，声明中赋值使用的等号与条件判断中的等号是相同的，似乎不存在条件判断表达式
+                    error(1);          // Found ':=' when expecting '='.
+                getsym();              // 读取下一个符号
+                if (sym == SYM_NUMBER) // 数字
+                {
+                    error(35); //"An array must be initialized with a brace-enclosed initializer."
+                }
+                else if (sym == SYM_LBRAC) // 检测到左大括号，开始对数组进行初始化
+                {
+                    dim = -1;
+                    ARRAY_TABLE amk_temp;
+                    amk_temp.dim = last_ex_amk.dim + 1;
+                    amk_temp.size = 1;
+                    for (int i = amk_temp.dim; i >= 1; i--)
+                    {
+                        amk_temp.dim_size[i] = last_ex_amk.dim_size[i - 1];
+                        amk_temp.size *= amk_temp.dim_size[i];
+                    }
+                    amk_temp.head_address = dx;
+                    pos = dx;
+                    int *count = (int *)malloc(sizeof(int));
+                    *count = 0;
+                    initializer(amk_temp, count);
+                    if (flag_dim_0)
+                    {
+                        last_ex_amk.dim_size[0] = init_num;          // 回填缺省的首个维度
+                        last_ex_amk.size *= last_ex_amk.dim_size[0]; // 回填数组总大小
+                    }
+                    free(count);
+                }
+                else
+                {              // 模仿C语言处理的报错
+                    error(40); //"Array initialization failed."
+                }
+            }
+            else if (flag_dim_0)
+            {              // 数组的首个维度在没有初始化时不能为空
+                error(33); //"The size of a dimension expected."
+            }
+            enter(ID_ARRAY); // 将数组填入符号表
+            if (statement_init)
+            {
+                gen(INT, 0, last_ex_amk.size);
+            }
+        }
+        else // 普通变量声明
+        {
+            if (sym == SYM_EQU || sym == SYM_BECOMES) // 下一个符号是条件判断等于或赋值等于
+            {
+                if (sym == SYM_BECOMES) // 赋值的等号
+                    // 注意，声明中赋值使用的等号与条件判断中的等号是相同的，似乎不存在条件判断表达式
+                    error(1); // Found ':=' when expecting '='.
+                getsym();     // 读取下一个符号
+                // 变量的值只能通过指令在运行时改变
+                symset set = createset(SYM_COMMA, SYM_SEMICOLON, SYM_NULL);
+                expression(set); // 处理完表达式之后，栈顶应当存有用于初始化变量的数值
+                destroyset(set);
+                gen(STO, 0, dx); // 由于本身就是声明的位置，层次差一定为0
+            }
+            enter(ID_VARIABLE); // 将标识符标注为变量类型并加入符号表
+            if (statement_init)
+            {
+                gen(INT, 0, 1);
+            }
+        }
+    }
+    else
+    {
+        error(4); // There must be an identifier to follow 'const', 'var', or 'procedure'.
+    }
+    init = 0;
 } // vardeclaration
 //////////////////////////////////////////////////////////////////////
 // 输出翻译完成的汇编代码
@@ -628,56 +628,56 @@ void listcode(int from, int to)
 // 引用时，下标可能是变量
 void dimension_cite(ARRAY_MASK *amk)
 {
-	int expression(symset fsys); // 内部声明expression，使得后面能够正确调用
-	dim = 0;					 // 重置当前处理的维度
-	int cur_dim_pos;			 // 当前维度的下标
-	int flag = 0;				 // 标志某个维度方括号之间的表达式是否为空
-	symset set;
-	set = createset(SYM_RSQBRAC, SYM_NULL); // 生成一个包含右方括号的符号集，因为右括号不应当被跳过
-	ARRAY_TABLE atb;						// 用来暂存数组的附加信息
-	atb = arytb[amk->AT_address];
-	while (sym == SYM_LSQBRAC && dim <= atb.dim)
-	{
-		getsym();
-		if (dim)
-		{										//// 进入这一分支时，栈顶恰好是到目前维度为止的偏移量
-			gen(LIT, 0, atb.dim_size[dim]);		// atb.dim_size[dim]
-			gen(OPR, 0, OPR_MUL);				// pos = pos * atb.dim_size[dim]
-			cur_dim_pos = expression(set);		// 获取方括号之间的表达式的数值
-			flag = cur_dim_pos == DIM_BACKFILL; // 测试是否为空
-			if (flag)
-			{			   // 如果为空，报错
-				error(36); //"The subscript of a dimension exopected."
-			}
-			gen(OPR, 0, OPR_ADD); // pos = pos * atb.dim_size[dim] + cur_dim_pos;
-		}
-		else
-		{
-			cur_dim_pos = expression(set);		// 获取方括号之间的表达式的数值
-			flag = cur_dim_pos == DIM_BACKFILL; // 测试是否为空
-			if (flag)
-			{			   // 如果为空，报错
-				error(36); //"The subscript of a dimension exopected."
-			}
-		}
-		if (sym == SYM_RSQBRAC) // 如果读取到了右方括号括号（正确完成配对）
-		{
-			dim++;
-			getsym(); // 继续读取下一个符号
-		}
-		else // 没有读取到右括号，报错
-		{
-			error(37); // Missing ']'.
-		}
-	}
-	if (dim <= atb.dim)
-	{			   // 因为没匹配到左方括号而结束循环，并且没有读到最后一层维度,目前无法处理
-		error(38); //"Not a allowed data type for now."
-	}
-	gen(LIT, 0, atb.head_address); // atb.head_address
-	gen(OPR, 0, OPR_ADD);		   // pos += atb.head_address;
-	destroyset(set);			   // 调用完成，销毁临时的符号集
-	return;
+    int expression(symset fsys); // 内部声明expression，使得后面能够正确调用
+    dim = 0;                     // 重置当前处理的维度
+    int cur_dim_pos;             // 当前维度的下标
+    int flag = 0;                // 标志某个维度方括号之间的表达式是否为空
+    symset set;
+    set = createset(SYM_RSQBRAC, SYM_NULL); // 生成一个包含右方括号的符号集，因为右括号不应当被跳过
+    ARRAY_TABLE atb;                        // 用来暂存数组的附加信息
+    atb = arytb[amk->AT_address];
+    while (sym == SYM_LSQBRAC && dim <= atb.dim)
+    {
+        getsym();
+        if (dim)
+        {                                       //// 进入这一分支时，栈顶恰好是到目前维度为止的偏移量
+            gen(LIT, 0, atb.dim_size[dim]);     // atb.dim_size[dim]
+            gen(OPR, 0, OPR_MUL);               // pos = pos * atb.dim_size[dim]
+            cur_dim_pos = expression(set);      // 获取方括号之间的表达式的数值
+            flag = cur_dim_pos == DIM_BACKFILL; // 测试是否为空
+            if (flag)
+            {              // 如果为空，报错
+                error(36); //"The subscript of a dimension exopected."
+            }
+            gen(OPR, 0, OPR_ADD); // pos = pos * atb.dim_size[dim] + cur_dim_pos;
+        }
+        else
+        {
+            cur_dim_pos = expression(set);      // 获取方括号之间的表达式的数值
+            flag = cur_dim_pos == DIM_BACKFILL; // 测试是否为空
+            if (flag)
+            {              // 如果为空，报错
+                error(36); //"The subscript of a dimension exopected."
+            }
+        }
+        if (sym == SYM_RSQBRAC) // 如果读取到了右方括号括号（正确完成配对）
+        {
+            dim++;
+            getsym(); // 继续读取下一个符号
+        }
+        else // 没有读取到右括号，报错
+        {
+            error(37); // Missing ']'.
+        }
+    }
+    if (dim <= atb.dim)
+    {              // 因为没匹配到左方括号而结束循环，并且没有读到最后一层维度,目前无法处理
+        error(38); //"Not a allowed data type for now."
+    }
+    gen(LIT, 0, atb.head_address); // atb.head_address
+    gen(OPR, 0, OPR_ADD);          // pos += atb.head_address;
+    destroyset(set);               // 调用完成，销毁临时的符号集
+    return;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -717,9 +717,9 @@ int factor(symset fsys) ////fsys是后继符号集合
                     break;
                 case ID_VARIABLE: // 变量情况下，生成一条LOD指令，格式为(LOD,层次差,数据地址)，将变量值置于栈顶
                     if (gen_OK)
-					{
-						error(39); //"Declaration CANNOT be done with virables."
-					}
+                    {
+                        error(39); //"Declaration CANNOT be done with virables."
+                    }
                     mk = (mask *)&table[i];
                     getsym(); // 继续读取下一个符号
                     // 处理赋值表达式
@@ -1612,7 +1612,7 @@ void block(symset fsys)
     cx0 = cx;         // 起始地址标记为此时的cx
     // 此时block_dx是程序中声明的变量、常量等总共将要占用的空间
     gen(INT, 0, block_dx);                              // 在程序体的起始位置加入一条INT指令，格式为(INT,0,常量)，作用是为程序开辟空间
-    init_code_insert(start_init, end_init);				// 在INT后，函数体之前，插入本函数体初始化所需的代码
+    init_code_insert(start_init, end_init);             // 在INT后，函数体之前，插入本函数体初始化所需的代码
     set1 = createset(SYM_SEMICOLON, SYM_END, SYM_NULL); // 将语句序列的后继符号分号与end加入后继符号集合
     set = uniteset(set1, fsys);
     statement(set);   // 处理语句，对应语法图最下方的“语句”
