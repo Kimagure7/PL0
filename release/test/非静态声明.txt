@@ -4,5 +4,6 @@ begin
 	y:=3;
 	if (x:=1) < (z:=y:=2) then
 		print(x,z);
-	const m = 3;
+	const m = 199;
+	print(m);
 end.
